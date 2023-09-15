@@ -1,5 +1,12 @@
 {
     "server": {
         "port": 8080
+    },
+    "mail": {
+        "host": "",
+        "service": "gmail",
+        "port": 587,
+        "user": "guilhermebnj@gmail.com",
+        "password": "npcltwclbqpxckkl"
     }
 }
