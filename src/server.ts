@@ -3,6 +3,7 @@ import express, { Express } from 'express';
 import morgan from 'morgan';
 import routes from './routes/rootRouter';
 import config from './config/default.json';
+import 'dotenv/config';
 
 const router: Express = express();
 

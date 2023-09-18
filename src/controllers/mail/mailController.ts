@@ -1,10 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import axios, { AxiosResponse } from 'axios';
 import MailService from "../../services/mailService";
-
-const get = (req: Request, res: Response, next: NextFunction) => {
-    return res.status(200).send({ message: 'Ok' });
-}
 
 const sendMail = async (req: Request, res: Response, next: NextFunction) => {
     const { to, subject, message } = req.body;
@@ -18,4 +13,4 @@ const sendMail = async (req: Request, res: Response, next: NextFunction) => {
     });
 }
 
-export default { get, sendMail };
+export default { sendMail };

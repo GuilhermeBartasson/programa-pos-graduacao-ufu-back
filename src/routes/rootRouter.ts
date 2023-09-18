@@ -1,8 +1,12 @@
 import express from 'express';
-import ipsum from './ipsum/ipsum';
+import mailRouter from './mail/mailRouter';
+import authenticationRouter from './authentication/authenticationRouter';
+import userRouter from './user/userRouter';
 
 const rootRouter = express.Router();
 
-rootRouter.use('/ipsum', ipsum);
+rootRouter.use('/mail', mailRouter);
+rootRouter.use('/authentication', authenticationRouter);
+rootRouter.use('/user', userRouter);
 
-export = rootRouter;
+export default rootRouter;

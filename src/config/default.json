@@ -6,7 +6,6 @@
         "host": "",
         "service": "gmail",
         "port": 587,
-        "user": "guilhermebnj@gmail.com",
-        "password": "npcltwclbqpxckkl"
+        "user": "guilhermebnj@gmail.com"
     }
 }

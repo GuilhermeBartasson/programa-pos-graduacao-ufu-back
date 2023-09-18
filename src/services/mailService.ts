@@ -17,7 +17,7 @@ class MailService {
             service: config.mail.service,
             auth: {
                 user: config.mail.user,
-                pass: config.mail.password
+                pass: process.env.EMAIL_PASSWORD
             }
         });
 
