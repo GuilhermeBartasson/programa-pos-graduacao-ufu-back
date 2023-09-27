@@ -4,9 +4,7 @@ import db from '../config/database';
 export default class UserDAL {
 
     public static async createApplicantUser(user: User) {
-        const {
-            email, firstName, middleName, lastName, password, salt
-        } = user;
+        const { email, firstName, middleName, lastName, password, salt } = user;
 
         try {
             const { rows } = await db.query(

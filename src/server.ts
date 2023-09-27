@@ -16,15 +16,14 @@ router.use(express.json());
 
 router.use((req, res, next) => {
     // CORS policy
-    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Origin', 'http://localhost:4200');
     // CORS headers
-    res.header('Access-Control-Allow-Headers', 'origin, X-Requested-With,Content-Type,Accept, Authorization');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     // CORS method headers
-    if (req.method === 'OPTIONS') {
-        res.header('Access-Control-Allow-Methods', 'GET PATCH DELETE POST');
-        return res.status(200).json({});
-    }
-    next();
+    res.header('Access-Control-Allow-Methods', 'GET, PATCH, DELETE, POST, OPTIONS');
+
+    if (req.method === 'OPTIONS') res.sendStatus(204);
+    else next();
 });
 
 router.use('/', routes);

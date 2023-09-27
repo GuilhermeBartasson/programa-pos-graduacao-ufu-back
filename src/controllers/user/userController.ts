@@ -11,8 +11,15 @@ const createApplicantUser = async (req: Request, res: Response, next: NextFuncti
     let salt: string = crypto.randomBytes(16).toString('hex');
     let hasher: crypto.Hash = crypto.createHash('sha256');
 
-    // hasher.update(crypto.privateDecrypt(process.env.PRIVATE_KEY as string, Buffer.from(user.password)).toString() + salt);
-    hasher.update(user.password + salt);
+    let privateKey = crypto.createPrivateKey({ key: process.env.PRIVATE_KEY as string });
+
+    let decryptedPassword = 
+        crypto.privateDecrypt({ 
+            key: privateKey, passphrase: '', 
+            padding: crypto.constants.RSA_PKCS1_PADDING
+        }, Buffer.from(user.password, 'base64')).toString();
+
+    hasher.update(decryptedPassword + salt);
 
     let hash = hasher.digest('hex');
 
@@ -21,11 +28,13 @@ const createApplicantUser = async (req: Request, res: Response, next: NextFuncti
 
     try {
         await UserDAL.createApplicantUser(user);
-    } catch (err) {
-        return res.status(500).send({ message: 'Houve um erro ao criar esta conta de usuário', err });
+    } catch (err: any) {
+        if (err?.code === '23505') return res.status(500).send('Já existe uma conta de usuário utilizando esse email.')
+
+        return res.status(500).send('Houve um erro ao criar esta conta de usuário');
     }
 
-    return res.status(200).send({ message: 'Usuário criado com sucesso' });
+    return res.status(201).send({ message: 'Usuário criado com sucesso' });
 }
 
 //#region Private Functions
