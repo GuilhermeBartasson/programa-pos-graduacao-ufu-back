@@ -1,7 +1,7 @@
 import express from 'express';
-import mailRouter from './mail/mailRouter';
-import authenticationRouter from './authentication/authenticationRouter';
-import userRouter from './user/userRouter';
+import mailRouter from './mailRouter';
+import authenticationRouter from './authenticationRouter';
+import userRouter from './userRouter';
 
 const rootRouter = express.Router();
 

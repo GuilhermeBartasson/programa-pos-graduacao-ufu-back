@@ -1,30 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
-import User from '../../models/user';
-import UserDAL from '../../DAL/userDAL';
-import * as crypto from 'crypto';
+import User from '../models/user';
+import UserDAL from '../DAL/userDAL';
+import { CryptoService, HashWithSaltResponse } from '../services/cryptoService';
 
 const createApplicantUser = async (req: Request, res: Response, next: NextFunction) => {
     const user: User = req.body;
 
     if (!userIsValidforSignup(user)) return res.status(500).send({ message: 'Alguns dados estão faltando' })
 
-    let salt: string = crypto.randomBytes(16).toString('hex');
-    let hasher: crypto.Hash = crypto.createHash('sha256');
+    let decryptedPassword: string = CryptoService.privateDecrypt(user.password);
 
-    let privateKey = crypto.createPrivateKey({ key: process.env.PRIVATE_KEY as string });
+    let hashResponse: HashWithSaltResponse = CryptoService.hashWithSalt(decryptedPassword);
 
-    let decryptedPassword = 
-        crypto.privateDecrypt({ 
-            key: privateKey, passphrase: '', 
-            padding: crypto.constants.RSA_PKCS1_PADDING
-        }, Buffer.from(user.password, 'base64')).toString();
-
-    hasher.update(decryptedPassword + salt);
-
-    let hash = hasher.digest('hex');
-
-    user.password = hash;
-    user.salt = salt;
+    user.password = hashResponse.hash;
+    user.salt = hashResponse.salt;
 
     try {
         await UserDAL.createApplicantUser(user);
