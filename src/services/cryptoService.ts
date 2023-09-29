@@ -20,13 +20,17 @@ class CryptoService {
     }
 
     public static hashWithSalt(text: string): HashWithSaltResponse {
-        let salt: string = crypto.randomBytes(16).toString('hex');
+        let salt: string = this.generateSalt();
         let hasher: crypto.Hash = crypto.createHash('sha256');
 
         hasher.update(text + salt);
         let hash = hasher.digest('hex');
 
         return { hash, salt };
+    }
+
+    public static generateSalt(): string {
+        return crypto.randomBytes(16).toString('hex');
     }
 
 }

@@ -8,6 +8,9 @@ interface User {
     salt: string;
     role: string;
     active: boolean;
+    validated: boolean;
+    validationCode: string;
+    validationDate: string;
 }
 
 export default User;
