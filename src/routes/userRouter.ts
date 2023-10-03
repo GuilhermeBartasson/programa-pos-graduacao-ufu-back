@@ -5,5 +5,7 @@ const router = express.Router();
 
 router.post('/createApplicantUser', controller.createApplicantUser);
 router.get('/validateApplicantAccount', controller.validateApplicantAccount);
+router.post('/resetPassword', controller.resetPassword);
+router.get('/checkPasswordResetDate', controller.checkPasswordResetDate);
 
 export default router;
