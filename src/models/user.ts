@@ -9,8 +9,10 @@ interface User {
     role: string;
     active: boolean;
     validated: boolean;
-    validationCode: string;
-    validationDate: string;
+    validationCode?: string;
+    validationDate?: string;
+    passwordResetCode?: string;
+    passwordResetExpiration?: string;
 }
 
 export default User;
