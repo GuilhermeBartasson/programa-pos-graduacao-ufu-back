@@ -8,9 +8,9 @@ interface HashWithSaltResponse {
 class CryptoService {
 
     public static privateDecrypt(text: string): string {
-        let privateKey: crypto.KeyObject = crypto.createPrivateKey({ key: process.env.PRIVATE_KEY as string });
+        const privateKey: crypto.KeyObject = crypto.createPrivateKey({ key: process.env.PRIVATE_KEY as string });
 
-        let decryptedPassword: string = 
+        const decryptedPassword: string = 
             crypto.privateDecrypt({ 
                 key: privateKey, passphrase: '', 
                 padding: crypto.constants.RSA_PKCS1_PADDING
@@ -19,14 +19,22 @@ class CryptoService {
         return decryptedPassword;
     }
 
-    public static hashWithSalt(text: string): HashWithSaltResponse {
-        let salt: string = this.generateSalt();
-        let hasher: crypto.Hash = crypto.createHash('sha256');
+    public static hashAndReturnSalt(text: string): HashWithSaltResponse {
+        const salt: string = this.generateSalt();
+        const hasher: crypto.Hash = crypto.createHash('sha256');
 
         hasher.update(text + salt);
-        let hash = hasher.digest('hex');
+        const hash = hasher.digest('hex');
 
         return { hash, salt };
+    }
+
+    public static hash(text: string): string {
+        const hasher: crypto.Hash = crypto.createHash('sha256');
+
+        hasher.update(text);
+
+        return hasher.digest('hex');
     }
 
     public static generateSalt(): string {

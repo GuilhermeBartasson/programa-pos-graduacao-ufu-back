@@ -1,3 +1,4 @@
+import UserDAL from "../DAL/userDAL";
 import User from "../models/user";
 
 class UserService {
@@ -11,6 +12,10 @@ class UserService {
         if (!user.password || user.password.trim() === '') valid = false;
 
         return valid;
+    }
+
+    public static async getUserByMail(email: string): Promise<User | undefined> {
+        return await UserDAL.getUserByMail(email);
     }
 
 }

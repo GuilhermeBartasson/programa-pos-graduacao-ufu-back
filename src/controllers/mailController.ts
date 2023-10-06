@@ -6,10 +6,10 @@ const sendMail = async (req: Request, res: Response, next: NextFunction) => {
 
     await MailService.sendMail(to, subject, message).then(info => {
         console.log(info);
-        res.status(200).send({ message: 'Email enviado com sucesso'  });
+        res.status(200).send('Email enviado com sucesso');
     }, err => {
         console.error(err);
-        res.status(500).send({ message: 'Ocorreu um erro ao enviar o email', err });
+        res.status(500).send('Ocorreu um erro ao enviar o email');
     });
 }
 

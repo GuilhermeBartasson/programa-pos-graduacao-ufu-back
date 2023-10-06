@@ -8,11 +8,11 @@ import MailService from '../services/mailService';
 const createApplicantUser = async (req: Request, res: Response, next: NextFunction) => {
     const user: User = req.body;
 
-    if (!UserService.userIsValidforSignup(user)) return res.status(500).send({ message: 'Alguns dados estão faltando' });
+    if (!UserService.userIsValidforSignup(user)) return res.status(500).send('Alguns dados estão faltando');
 
-    let decryptedPassword: string = CryptoService.privateDecrypt(user.password);
+    const decryptedPassword: string = CryptoService.privateDecrypt(user.password);
 
-    let hashResponse: HashWithSaltResponse = CryptoService.hashWithSalt(decryptedPassword);
+    const hashResponse: HashWithSaltResponse = CryptoService.hashAndReturnSalt(decryptedPassword);
 
     user.password = hashResponse.hash;
     user.salt = hashResponse.salt;
@@ -34,14 +34,14 @@ const createApplicantUser = async (req: Request, res: Response, next: NextFuncti
         `Parabéns, sua conta foi criada com sucesso, clique no link a seguir para confirmar sua conta: http://localhost:4200/validateAccount/${user.validationCode}`
     );
 
-    return res.status(201).send({ message: 'Usuário criado com sucesso' });
+    return res.status(201).send('Usuário criado com sucesso');
 }
 
 const validateApplicantAccount = async (req: Request, res: Response, next: NextFunction) => {
     const { validationCode } = req.query;
 
     if ((validationCode as string).trim() === '' || validationCode === undefined) 
-        return res.status(500).send({ message: 'Não foi informado um código de validação' });
+        return res.status(500).send('Não foi informado um código de validação');
 
     try {
         await UserDAL.validateApplicantAccount(validationCode as string);
@@ -50,21 +50,21 @@ const validateApplicantAccount = async (req: Request, res: Response, next: NextF
         return res.status(500).send('Houve um erro ao validar esta conta de usuário');
     }
 
-    return res.status(200).send({ message: 'Conta validada com sucesso' });
+    return res.status(200).send('Conta validada com sucesso');
 }
 
 const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
     const { password, passwordResetCode } = req.body;
 
     if ((password as string).trim() === '' || password === undefined || (passwordResetCode as string).trim() === '' || passwordResetCode === undefined)
-        return res.status(500).send({ message: 'A senha ou email não foram informados' });
+        return res.status(500).send('A senha ou email não foram informados');
 
-    let decryptedPassword: string = CryptoService.privateDecrypt(password);
+    const decryptedPassword: string = CryptoService.privateDecrypt(password);
 
-    let hashResponse: HashWithSaltResponse = CryptoService.hashWithSalt(decryptedPassword);
+    const hashResponse: HashWithSaltResponse = CryptoService.hashAndReturnSalt(decryptedPassword);
 
-    let hashedPassword: string = hashResponse.hash;
-    let salt: string = hashResponse.salt;
+    const hashedPassword: string = hashResponse.hash;
+    const salt: string = hashResponse.salt;
 
     try {
         await UserDAL.updatePassword(hashedPassword, salt, passwordResetCode);
@@ -73,14 +73,14 @@ const resetPassword = async (req: Request, res: Response, next: NextFunction) =>
         return res.status(500).send('Houve um erro ao redefinir a senha');
     }
 
-    return res.status(200).send({ message: 'Senha redefinida com sucesso' });
+    return res.status(200).send('Senha redefinida com sucesso');
 }
 
 const checkPasswordResetDate = async (req: Request, res: Response, next: NextFunction) => {
     const { passwordResetCode } = req.query;
 
     if ((passwordResetCode as string).trim() === '' || passwordResetCode === undefined)
-        return res.status(500).send({ message: 'Um código de redefinição de senha não foi informado' });
+        return res.status(500).send('Um código de redefinição de senha não foi informado');
 
     let valid: boolean = false;
 
@@ -100,13 +100,13 @@ const sendPasswordResetMail = async (req: Request, res: Response, next: NextFunc
     const { email } = req.body;
 
     if ((email as string).trim() === '' || email === undefined)
-        return res.status(500).send({ message: 'Um email não foi informado' })
+        return res.status(500).send('Um email não foi informado')
 
     try {
-        let user = await UserDAL.getUserByMail(email as string);
+        const user = await UserDAL.getUserByMail(email as string);
 
         if (user) {
-            let resetCode = CryptoService.generateSalt();
+            const resetCode = CryptoService.generateSalt();
 
             await UserDAL.setUserPasswordResetCode(email, resetCode);
 
