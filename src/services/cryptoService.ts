@@ -1,4 +1,5 @@
 import * as crypto from 'crypto';
+import jsonwebtoken from 'jsonwebtoken';
 
 interface HashWithSaltResponse {
     hash: string,
@@ -39,6 +40,10 @@ class CryptoService {
 
     public static generateSalt(): string {
         return crypto.randomBytes(16).toString('hex');
+    }
+
+    public static generateJwtToken(data: any): string {
+        return jsonwebtoken.sign(data, process.env.PRIVATE_KEY as string, { algorithm: 'RS256', expiresIn: 86400 });
     }
 
 }
