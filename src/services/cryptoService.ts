@@ -46,6 +46,17 @@ class CryptoService {
         return jsonwebtoken.sign(data, process.env.PRIVATE_KEY as string, { algorithm: 'RS256', expiresIn: 86400 });
     }
 
+    public static verifyJwtToken(token: string): boolean {
+        try {
+            jsonwebtoken.verify(token, process.env.PUBLIC_KEY as string, { algorithms: ['RS256'] });
+        } catch (err: any) {
+            console.error(err);
+            return false;
+        }
+
+        return true;
+    }
+
 }
 
 export { CryptoService, HashWithSaltResponse };
