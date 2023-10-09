@@ -1,5 +1,6 @@
 import * as crypto from 'crypto';
 import jsonwebtoken from 'jsonwebtoken';
+import config from '../config/default.json';
 
 interface HashWithSaltResponse {
     hash: string,
@@ -43,7 +44,7 @@ class CryptoService {
     }
 
     public static generateJwtToken(data: any): string {
-        return jsonwebtoken.sign(data, process.env.PRIVATE_KEY as string, { algorithm: 'RS256', expiresIn: 86400 });
+        return jsonwebtoken.sign(data, process.env.PRIVATE_KEY as string, { algorithm: 'RS256', expiresIn: config.server.tokenExpireTime });
     }
 
     public static verifyJwtToken(token: string): boolean {

@@ -21,7 +21,6 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
             return res.status(500).send('Crednciais inválidas');
 
         const decryptedPassword: string = CryptoService.privateDecrypt(password);
-        console.log(decryptedPassword);
         const hashedPasswod: string = CryptoService.hash(decryptedPassword + user.salt);
 
         if (hashedPasswod !== user.password)

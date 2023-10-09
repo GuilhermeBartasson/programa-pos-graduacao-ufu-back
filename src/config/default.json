@@ -1,6 +1,7 @@
 {
     "server": {
-        "port": 8080
+        "port": 8080,
+        "tokenExpireTime": 86400
     },
     "mail": {
         "host": "",
