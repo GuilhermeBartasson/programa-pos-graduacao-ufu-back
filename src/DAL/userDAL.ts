@@ -35,7 +35,7 @@ export default class UserDAL {
 
     public static async isPasswordResetExpired(passwordResetCode: string): Promise<boolean> {
         try {
-            const { rows } = await db.query('SELECT * FROM users WHERE passwordResetCode = $1 and Now() < passwordResetDate', [passwordResetCode]);
+            const { rows } = await db.query('SELECT * FROM users WHERE passwordResetCode = $1 and Now() < passwordResetExpiration', [passwordResetCode]);
 
             return rows.length > 0;
         } catch (err) {
