@@ -16,7 +16,7 @@ const createApplicantUser = async (req: Request, res: Response, next: NextFuncti
 
     user.password = hashResponse.hash;
     user.salt = hashResponse.salt;
-    user.validationCode = CryptoService.generateSalt();
+    user.validationcode = CryptoService.generateSalt();
 
     try {
         await UserDAL.createApplicantUser(user);
@@ -31,7 +31,7 @@ const createApplicantUser = async (req: Request, res: Response, next: NextFuncti
     MailService.sendMail(
         user.email, 
         'Confirmação de Conta', 
-        `Parabéns, sua conta foi criada com sucesso, clique no link a seguir para confirmar sua conta: http://localhost:4200/validateAccount/${user.validationCode}`
+        `Parabéns, sua conta foi criada com sucesso, clique no link a seguir para confirmar sua conta: http://localhost:4200/validateAccount/${user.validationcode}`
     );
 
     return res.status(201).send('Usuário criado com sucesso');
@@ -110,7 +110,7 @@ const sendPasswordResetMail = async (req: Request, res: Response, next: NextFunc
 
             await UserDAL.setUserPasswordResetCode(email, resetCode);
 
-            MailService.sendMail(email, 'Redefinição de Senha Portal de Pós Graduação', `Uma redfinição de senha foi solicitada para a sua conta, clique no link a seguir para redefinir sua senha http://localhost:4200/resetPassword/${resetCode}<br>Esee link deixará de ser válido em 15 minutos.`);
+            MailService.sendMail(email, 'Redefinição de Senha Portal de Pós Graduação', `Uma redefinição de senha foi solicitada para a sua conta, clique no link a seguir para redefinir sua senha http://localhost:4200/resetPassword/${resetCode}<br>Esee link deixará de ser válido em 15 minutos.`);
         } else {
             return res.status(500).send('Não foi possível encontrar uma conta vinculada a esse endereço de email');
         }

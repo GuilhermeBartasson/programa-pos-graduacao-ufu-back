@@ -4,13 +4,13 @@ import db from '../config/database';
 export default class UserDAL {
 
     public static async createApplicantUser(user: User): Promise<void> {
-        const { email, firstName, middleName, lastName, password, salt, validationCode } = user;
+        const { email, firstname, middlename, lastname, password, salt, validationcode } = user;
 
         try {
             await db.query(
                 "INSERT INTO users (email, firstName, middleName, lastName, password, salt, role, active, validated, validationCode) " +
                 "VALUES ($1, $2, $3, $4, $5, $6, 'applicant', TRUE, FALSE, $7)",
-                [email, firstName, middleName, lastName, password, salt, validationCode]
+                [email, firstname, middlename, lastname, password, salt, validationcode]
             );
         } catch (err) {
             throw err;

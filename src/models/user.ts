@@ -1,18 +1,18 @@
 interface User {
     id: number;
     email: string;
-    firstName: string;
-    middleName: string;
-    lastName: string;
+    firstname: string;
+    middlename: string;
+    lastname: string;
     password: string;
     salt: string;
     role: string;
     active: boolean;
     validated: boolean;
-    validationCode?: string;
-    validationDate?: string;
-    passwordResetCode?: string;
-    passwordResetExpiration?: string;
+    validationcode?: string;
+    validationdate?: string;
+    passwordresetcode?: string;
+    passwordresetexpiration?: string;
 }
 
 export default User;

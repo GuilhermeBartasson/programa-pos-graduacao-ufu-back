@@ -10,12 +10,13 @@ const getPublicKey = (req: Request, res: Response, next: NextFunction) => {
 const login = async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req. body;
     let token = '';
+    let user: User | undefined;
 
     if ((email as string).trim() === '' || email === undefined || (password as string).trim() === '' || password === undefined)
         return res.status(500).send('Os dados de login foram informados de maneira incorreta');
 
     try {
-        const user: User | undefined = await UserService.getUserByMail(email);
+        user = await UserService.getUserByMail(email);
 
         if (user === undefined)
             return res.status(500).send('Crednciais inválidas');
@@ -32,7 +33,15 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         return res.status(500).send('Houve um erro ao realizar login');
     }
 
-    return res.status(200).send(token);
+    return res.status(200).send({ 
+        token, 
+        firstName: user.firstname, 
+        middlename: user.middlename, 
+        lastname: user.lastname, 
+        role: user.role, 
+        active: user.active,
+        validated: user.validated
+    });
 }
 
 export default { getPublicKey, login };

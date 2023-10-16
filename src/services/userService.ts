@@ -7,8 +7,8 @@ class UserService {
         let valid: boolean = true;
 
         if (!user.email || user.email.trim() === '') valid = false;
-        if (!user.firstName || user.firstName.trim() === '') valid = false;
-        if (!user.lastName || user.lastName.trim() === '') valid = false;
+        if (!user.firstname || user.firstname.trim() === '') valid = false;
+        if (!user.lastname || user.lastname.trim() === '') valid = false;
         if (!user.password || user.password.trim() === '') valid = false;
 
         return valid;
