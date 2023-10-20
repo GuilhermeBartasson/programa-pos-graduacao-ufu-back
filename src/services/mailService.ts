@@ -25,7 +25,7 @@ class MailService {
         return new Promise<any>((resolve, reject) => {
             transporter.sendMail(mailOptions, (err, info) => {
                 if (err) {
-                    console.log(err);
+                    console.error(err);
                     reject(err);
                 } else {
                     resolve(info);

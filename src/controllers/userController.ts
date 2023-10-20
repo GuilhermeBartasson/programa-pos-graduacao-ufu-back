@@ -16,7 +16,7 @@ const createApplicantUser = async (req: Request, res: Response, next: NextFuncti
 
     user.password = hashResponse.hash;
     user.salt = hashResponse.salt;
-    user.validationcode = CryptoService.generateSalt();
+    user.validationCode = CryptoService.generateSalt();
 
     try {
         await UserDAL.createApplicantUser(user);
@@ -31,7 +31,7 @@ const createApplicantUser = async (req: Request, res: Response, next: NextFuncti
     MailService.sendMail(
         user.email, 
         'Confirmação de Conta', 
-        `Parabéns, sua conta foi criada com sucesso, clique no link a seguir para confirmar sua conta: http://localhost:4200/validateAccount/${user.validationcode}`
+        `Parabéns, sua conta foi criada com sucesso, clique no link a seguir para confirmar sua conta: http://localhost:4200/validateAccount/${user.validationCode}`
     );
 
     return res.status(201).send('Usuário criado com sucesso');

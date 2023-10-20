@@ -4,13 +4,13 @@ import db from '../config/database';
 export default class UserDAL {
 
     public static async createApplicantUser(user: User): Promise<void> {
-        const { email, firstname, middlename, lastname, password, salt, validationcode } = user;
+        const { email, firstName, middleName, lastName, password, salt, validationCode } = user;
 
         try {
             await db.query(
                 "INSERT INTO users (email, firstName, middleName, lastName, password, salt, role, active, validated, validationCode) " +
                 "VALUES ($1, $2, $3, $4, $5, $6, 'applicant', TRUE, FALSE, $7)",
-                [email, firstname, middlename, lastname, password, salt, validationcode]
+                [email, firstName, middleName, lastName, password, salt, validationCode]
             );
         } catch (err) {
             throw err;
@@ -49,7 +49,24 @@ export default class UserDAL {
             let user: User | undefined = undefined
 
             if (rows.length > 0) {
-                user = rows[0];
+                let u: any = rows[0];
+                
+                user = {
+                    id: u.id,
+                    email: u.email,
+                    firstName: u.firstname,
+                    middleName: u.middleName,
+                    lastName: u.lastname,
+                    password: u.password,
+                    salt: u.salt,
+                    role: u.role,
+                    active: u.active,
+                    validated: u.validated,
+                    validationCode: u?.validationcode,
+                    validationDate: u?.validationdate,
+                    passwordResetCode: u?.passwordresetcode,
+                    passwordResetExpiration: u?.passwordresetexpiration
+                }
             } else {
                 throw 'Não foi possível encontrar uma conta vinculada ao email informado';
             }

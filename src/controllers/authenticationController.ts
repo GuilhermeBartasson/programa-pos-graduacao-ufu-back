@@ -35,9 +35,9 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
     return res.status(200).send({ 
         token, 
-        firstName: user.firstname, 
-        middlename: user.middlename, 
-        lastname: user.lastname, 
+        firstName: user.firstName, 
+        middlename: user.middleName, 
+        lastname: user.lastName, 
         role: user.role, 
         active: user.active,
         validated: user.validated
