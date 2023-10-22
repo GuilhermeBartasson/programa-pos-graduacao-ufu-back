@@ -1,4 +1,4 @@
-import e, { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import User from '../models/user';
 import UserDAL from '../DAL/userDAL';
 import { CryptoService, HashWithSaltResponse } from '../services/cryptoService';

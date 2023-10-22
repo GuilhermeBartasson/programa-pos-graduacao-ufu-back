@@ -1,4 +1,4 @@
-interface User {
+export default interface User {
     id: number;
     email: string;
     firstName: string;
@@ -14,5 +14,3 @@ interface User {
     passwordResetCode?: string;
     passwordResetExpiration?: string;
 }
-
-export default User;
