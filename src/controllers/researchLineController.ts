@@ -31,15 +31,17 @@ const getResearchLines = async (req: Request, res: Response, next: NextFunction)
         console.error(err);
         return res.status(500).send('Houve um erro ao buscar pelas linhas de pesquisa');
     }
-
+    
     if (paginate === 'true') {
         if (size === undefined || page === undefined)
             return res.send(500).send('Os dados de paginação não foram informados ou foram informados de maneira incorreta');
 
         response = PaginationService.paginate(parseInt(page as string), parseInt(size as string), researchLines);
+    } else {
+        response.data = researchLines;
     }
 
-    return res.status(200).send({ response })
+    return res.status(200).send(response)
 }
 
 export default { createResearchLine, getResearchLines };
