@@ -18,7 +18,7 @@ router.use((req, res, next) => {
     // CORS policy
     res.header('Access-Control-Allow-Origin', 'http://localhost:4200');
     // CORS headers
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     // CORS method headers
     res.header('Access-Control-Allow-Methods', 'GET, PATCH, DELETE, POST, OPTIONS');
 

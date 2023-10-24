@@ -1,4 +1,5 @@
 import db from '../config/database';
+import ResearchLine from '../models/researchLine';
 
 export default class ResearchLineDAL {
 
@@ -8,6 +9,18 @@ export default class ResearchLineDAL {
         } catch (err) {
             throw err;
         }
+    }
+
+    public static async getResearchLines() {
+        let researchLines: ResearchLine[] = [];
+
+        try {
+            researchLines = (await db.query('SELECT * FROM researchLines', [])).rows;
+        } catch (err) {
+            throw err;
+        }
+
+        return researchLines;
     }
 
 }

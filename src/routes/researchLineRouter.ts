@@ -4,6 +4,7 @@ import authMiddleare from '../middlewares/auth';
 
 const router = express.Router();
 
-router.post('/createResearchLine', authMiddleare, controller.createResearchLine)
+router.post('/createResearchLine', authMiddleare, controller.createResearchLine);
+router.get('/getResearchLines', authMiddleare, controller.getResearchLines);
 
 export default router;
