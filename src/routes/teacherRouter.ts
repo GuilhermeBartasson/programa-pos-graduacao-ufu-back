@@ -4,6 +4,6 @@ import authMiddleare from '../middlewares/auth';
 
 const router = express.Router();
 
-router.post('createTeacher', authMiddleare, controller.createTeacher);
+router.post('/createTeacher', authMiddleare, controller.createTeacher);
 
 export default router;
