@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import TeacherDAL from '../DAL/teacherDAL';
+import Teacher from '../models/teacher';
+import PaginationObject from '../models/paginationObject';
+import PaginationService from '../services/paginationService';
 
 const createTeacher = async (req: Request, res: Response, next: NextFunction) => {
     const teacher = req.body;
@@ -17,4 +20,28 @@ const createTeacher = async (req: Request, res: Response, next: NextFunction) =>
     return res.status(201).send('Docente criado com sucesso');
 }
 
-export default { createTeacher };
+const getTeachers = async (req: Request, res: Response, next: NextFunction) => {
+    const { paginate, page, size } = req.query;
+    let response: PaginationObject = { page: 0, size: 0, pageCount: 0, data: [] };
+    let teachers: Teacher[] = [];
+
+    try {
+        teachers = await TeacherDAL.getTeachers();
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send('Houve um erro ao buscar por docentes');
+    }
+
+    if (paginate === 'true') {
+        if (size === undefined || page === undefined)
+            return res.send(500).send('Os dados de paginação não foram informados ou foram informados de maneira incorreta');
+
+        response = PaginationService.paginate(parseInt(page as string), parseInt(size as string), teachers);
+    } else {
+        response.data = teachers;
+    }
+
+    res.status(200).send(response);
+}
+
+export default { createTeacher, getTeachers };

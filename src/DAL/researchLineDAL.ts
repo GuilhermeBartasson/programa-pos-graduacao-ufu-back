@@ -3,7 +3,7 @@ import ResearchLine from '../models/researchLine';
 
 export default class ResearchLineDAL {
 
-    public static async createResearchLine(name: string) {
+    public static async createResearchLine(name: string): Promise<void> {
         try {
             await db.query('INSERT INTO researchLines (name, active) VALUES ($1, TRUE)', [name]);
         } catch (err) {
@@ -11,7 +11,7 @@ export default class ResearchLineDAL {
         }
     }
 
-    public static async getResearchLines() {
+    public static async getResearchLines(): Promise<ResearchLine[]> {
         let researchLines: ResearchLine[] = [];
 
         try {

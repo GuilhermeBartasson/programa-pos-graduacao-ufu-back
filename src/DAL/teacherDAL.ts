@@ -16,4 +16,16 @@ export default class TeacherDAL {
         }
     }
 
+    public static async getTeachers(): Promise<Teacher[]> {
+        let teachers: Teacher[] = [];
+
+        try {
+            teachers = (await db.query("SELECT * FROM teachers", [])).rows;
+        } catch (err) {
+            throw err;
+        }
+
+        return teachers;
+    }
+
 }
