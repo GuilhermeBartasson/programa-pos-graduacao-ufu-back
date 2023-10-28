@@ -6,5 +6,7 @@ const router = express.Router();
 
 router.post('/createTeacher', authMiddleare, controller.createTeacher);
 router.get('/getTeachers', authMiddleare, controller.getTeachers);
+router.put('/updateTeacher', authMiddleare, controller.updateTeacher);
+router.delete('/deleteTeacher', authMiddleare, controller.deleteTeacher);
 
 export default router;

@@ -28,4 +28,25 @@ export default class TeacherDAL {
         return teachers;
     }
 
+    public static async updateTeacher(teacher: Teacher): Promise<void> {
+        const { id, name, email, personalPageLink } = teacher;
+
+        try {
+            await db.query(
+                "UPDATE teachers SET name = $1, email = $2, personalPageLink = $3 WHERE id = $4",
+                [name, email, personalPageLink, id]
+            );
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    public static async deleteTeacher(id: number): Promise<void> {
+        try {
+            await db.query("UPDATE teachers SET deleted = true WHERE id = $1", [id]);
+        } catch (err) {
+            throw err;
+        }
+    }
+
 }

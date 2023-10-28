@@ -44,4 +44,32 @@ const getTeachers = async (req: Request, res: Response, next: NextFunction) => {
     res.status(200).send(response);
 }
 
-export default { createTeacher, getTeachers };
+const updateTeacher = async (req: Request, res: Response, next: NextFunction) => {
+    const teacher = req.body;
+
+    try {
+        await TeacherDAL.updateTeacher(teacher);
+    } catch (err: any) {
+        console.error(err);
+
+        return res.status(500).send('Houve um erro ao editar esse docente');
+    }
+
+    return res.status(200).send('Docente editado com sucesso');
+}
+
+const deleteTeacher = async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.query;
+
+    try {
+        await TeacherDAL.deleteTeacher(parseInt(id as string));
+    } catch (err: any) {
+        console.error(err);
+
+        return res.status(500).send('Houve um erro ao deletar esse docente');
+    }
+
+    return res.status(200).send('Docente deletado');
+}
+
+export default { createTeacher, getTeachers, updateTeacher, deleteTeacher };
