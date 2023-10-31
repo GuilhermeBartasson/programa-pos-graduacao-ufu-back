@@ -16,13 +16,29 @@ export default class TeacherDAL {
         }
     }
 
-    public static async getTeachers(): Promise<Teacher[]> {
+    public static async getTeachers(showDeleted: boolean = false): Promise<Teacher[]> {
         let teachers: Teacher[] = [];
+        let t: any;
 
         try {
-            teachers = (await db.query("SELECT * FROM teachers", [])).rows;
+            let query: string = 'SELECT * FROM teachers';
+
+            if (!showDeleted) query += ' WHERE deleted = false';
+
+            t = (await db.query(query, [])).rows;
         } catch (err) {
             throw err;
+        }
+
+        for (let x in t) {
+            teachers.push({
+                personalPageLink: t[x].personalpagelink,
+                name: t[x].name,
+                email: t[x].email,
+                id: t[x].id,
+                active: t[x].active,
+                deleted: t[x].deleted
+            });
         }
 
         return teachers;

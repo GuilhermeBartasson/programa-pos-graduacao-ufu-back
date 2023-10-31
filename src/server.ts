@@ -20,7 +20,7 @@ router.use((req, res, next) => {
     // CORS headers
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     // CORS method headers
-    res.header('Access-Control-Allow-Methods', 'GET, PATCH, DELETE, POST, OPTIONS');
+    res.header('Access-Control-Allow-Methods', 'GET, PATCH, DELETE, POST, OPTIONS, PUT');
 
     if (req.method === 'OPTIONS') res.sendStatus(204);
     else next();

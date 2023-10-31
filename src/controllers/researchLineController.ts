@@ -5,10 +5,15 @@ import PaginationObject from '../models/paginationObject';
 import PaginationService from '../services/paginationService';
 
 const createResearchLine = async (req: Request, res: Response, next: NextFunction) => {
-    const { name } = req.body;
+    const { name, teachers } = req.body;
+
+    const researchLine: ResearchLine = {
+        name,
+        teachers
+    }
 
     try {
-        await ResearchLineDAL.createResearchLine(name);
+        await ResearchLineDAL.createResearchLine(researchLine);
     } catch (err: any) {
         console.error(err);
 

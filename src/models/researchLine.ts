@@ -1,5 +1,9 @@
+import Teacher from "./teacher";
+
 export default interface ResearchLine {
-    id: number;
+    id?: number;
     name: string;
-    active: boolean;
+    teachers?: Teacher[];
+    active?: boolean;
+    deleted?: boolean;
 }
