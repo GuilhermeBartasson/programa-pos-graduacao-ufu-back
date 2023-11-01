@@ -18,11 +18,15 @@ export default class ResearchLineDAL {
         }
     }
 
-    public static async getResearchLines(): Promise<ResearchLine[]> {
+    public static async getResearchLines(showDeleted: boolean = false): Promise<ResearchLine[]> {
         let researchLines: ResearchLine[] = [];
 
         try {
-            researchLines = (await db.query('SELECT * FROM researchLines', [])).rows;
+            let query: string = 'SELECT * FROM researchLines'
+
+            if (!showDeleted) query += ' WHERE deleted = false';
+
+            researchLines = (await db.query(query, [])).rows;
 
             for (let x in researchLines) {
                 let teachers: any[] = (

@@ -6,5 +6,6 @@ const router = express.Router();
 
 router.post('/createResearchLine', authMiddleare, controller.createResearchLine);
 router.get('/getResearchLines', authMiddleare, controller.getResearchLines);
+router.delete('/deleteResearchLine', authMiddleare, controller.deleteResearchLine);
 
 export default router;

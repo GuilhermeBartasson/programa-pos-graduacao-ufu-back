@@ -46,7 +46,7 @@ const getTeachers = async (req: Request, res: Response, next: NextFunction) => {
 
 const updateTeacher = async (req: Request, res: Response, next: NextFunction) => {
     const teacher = req.body;
-    console.log(teacher);
+
     try {
         await TeacherDAL.updateTeacher(teacher);
     } catch (err: any) {

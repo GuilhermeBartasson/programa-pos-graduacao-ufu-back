@@ -49,4 +49,18 @@ const getResearchLines = async (req: Request, res: Response, next: NextFunction)
     return res.status(200).send(response)
 }
 
-export default { createResearchLine, getResearchLines };
+const deleteResearchLine = async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.query;
+
+    try {
+        await ResearchLineDAL.deleteResearchLine(parseInt(id as string));
+    } catch (err) {
+        console.error(err);
+
+        return res.status(500).send('Houve um erro ao deletar essa linha de pesquisa');
+    }
+
+    return res.status(200).send('Linha de pesquisa deletada');
+}
+
+export default { createResearchLine, getResearchLines, deleteResearchLine };
