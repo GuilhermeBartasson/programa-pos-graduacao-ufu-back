@@ -64,11 +64,11 @@ export default class ResearchLineDAL {
 
             for (let x in teachers) teacherIds.push(teachers[parseInt(x)].id);
 
-            await db.query('DELETE FROM researchLineTeachers WHERE researchLineId = $1 AND teacherId NOT IN ($2)', [researchLine.id, teacherIds]);
+            await db.query('DELETE FROM researchLineTeachers WHERE researchLineId = $1 AND NOT (teacherId = ANY ($2))', [researchLine.id, teacherIds]);
 
             for (let y in teacherIds) {
                 await db.query(
-                    'INSERT INTO researchLineTeachers (researchLineId, teacherId) SELECT $1, $2' + 
+                    'INSERT INTO researchLineTeachers (researchLineId, teacherId) SELECT $1, $2 ' + 
                     'WHERE NOT EXISTS(SELECT researchLineId, teacherId FROM researchLineTeachers WHERE researchLineId = $1 AND teacherId = $2)',
                     [researchLine.id, teacherIds[parseInt(y)]]
                 );

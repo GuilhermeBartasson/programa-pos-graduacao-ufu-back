@@ -49,6 +49,20 @@ const getResearchLines = async (req: Request, res: Response, next: NextFunction)
     return res.status(200).send(response)
 }
 
+const updateResearchLine = async (req: Request, res: Response, next: NextFunction) => {
+    const { researchLine } = req.body;
+
+    try {
+        await ResearchLineDAL.updateResearchLine(researchLine);
+    } catch (err) {
+        console.error(err);
+
+        res.status(500).send('Houve um erro ao atualizar essa linha de pesquisa');
+    }
+
+    return res.status(200).send('Linha de pesquisa atualizada com sucesso');
+}
+
 const deleteResearchLine = async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.query;
 
@@ -63,4 +77,4 @@ const deleteResearchLine = async (req: Request, res: Response, next: NextFunctio
     return res.status(200).send('Linha de pesquisa deletada');
 }
 
-export default { createResearchLine, getResearchLines, deleteResearchLine };
+export default { createResearchLine, getResearchLines, updateResearchLine, deleteResearchLine };
