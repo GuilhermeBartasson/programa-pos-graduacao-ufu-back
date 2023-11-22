@@ -1,6 +1,7 @@
 export default interface SelectiveProcess {
     id: number;
     name: string;
+    collegeId: number;
     startDate: string;
     endDate: string;
     applicationLimitDate: string;

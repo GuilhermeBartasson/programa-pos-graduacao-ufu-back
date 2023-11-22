@@ -5,8 +5,10 @@ import Teacher from '../models/teacher';
 export default class ResearchLineDAL {
 
     public static async createResearchLine(researchLine: ResearchLine): Promise<void> {
+        const { name, collegeId } = researchLine;
+
         try {
-            await db.query('INSERT INTO researchLines (name, active, deleted) VALUES ($1, TRUE, FALSE)', [researchLine.name]);
+            await db.query('INSERT INTO researchLines (name, collegeId, active, deleted) VALUES ($1, $2, TRUE, FALSE)', [name, collegeId]);
 
             let id = (await db.query('SELECT id FROM researchLines WHERE name = $1', [researchLine.name]))?.rows[0]?.id;
 
@@ -20,13 +22,21 @@ export default class ResearchLineDAL {
 
     public static async getResearchLines(showDeleted: boolean = false): Promise<ResearchLine[]> {
         let researchLines: ResearchLine[] = [];
+        let r: any;
 
         try {
             let query: string = 'SELECT * FROM researchLines'
 
             if (!showDeleted) query += ' WHERE deleted = false';
 
-            researchLines = (await db.query(query, [])).rows;
+            r = (await db.query(query, [])).rows;
+
+            for (let x in r) {
+                researchLines.push({
+                    name: r[x].name,
+                    collegeId: r[x].collegeid
+                });
+            }
 
             for (let x in researchLines) {
                 let teachers: any[] = (
@@ -55,10 +65,10 @@ export default class ResearchLineDAL {
     }
 
     public static async updateResearchLine(researchLine: ResearchLine): Promise<void> {
-        let { teachers } = researchLine;
+        let { name, id, teachers, collegeId } = researchLine;
 
         try {
-            await db.query('UPDATE researchLines SET name = $1 WHERE id = $2', [researchLine.name, researchLine.id]);
+            await db.query('UPDATE researchLines SET name = $1, collegeId = $3 WHERE id = $2', [name, id, collegeId]);
 
             let teacherIds: number[] = [];
 
