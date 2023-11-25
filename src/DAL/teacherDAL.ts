@@ -50,7 +50,7 @@ export default class TeacherDAL {
 
         try {
             await db.query(
-                "UPDATE teachers SET name = $1, email = $2, personalPageLink = $3, collegeId = $4 WHERE id = $4",
+                "UPDATE teachers SET name = $1, email = $2, personalPageLink = $3, collegeId = $5 WHERE id = $4",
                 [name, email, personalPageLink, id, collegeId]
             );
         } catch (err) {

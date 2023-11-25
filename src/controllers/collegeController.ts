@@ -19,12 +19,12 @@ const createCollege = async (req: Request, res: Response, next: NextFunction) =>
 }
 
 const getColleges = async (req: Request, res: Response, next: NextFunction) => {
-    const { paginate, page, size } = req.query;
+    const { paginate, page, size, showDeleted } = req.query;
     let response: PaginationObject = { page: 0, size: 0, pageCount: 0, data: [] };
     let colleges: College[] = [];
 
     try {
-        colleges = await CollegeDAL.getColleges();
+        colleges = await CollegeDAL.getColleges(showDeleted === 'true');
     } catch (err) {
         console.error(err);
 
