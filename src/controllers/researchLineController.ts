@@ -5,11 +5,12 @@ import PaginationObject from '../models/paginationObject';
 import PaginationService from '../services/paginationService';
 
 const createResearchLine = async (req: Request, res: Response, next: NextFunction) => {
-    const { name, teachers } = req.body;
+    const { name, teachers, collegeId } = req.body;
 
     const researchLine: ResearchLine = {
         name,
-        teachers
+        teachers,
+        collegeId
     }
 
     try {
