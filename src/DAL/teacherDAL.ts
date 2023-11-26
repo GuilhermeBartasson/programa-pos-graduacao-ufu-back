@@ -1,5 +1,6 @@
 import Teacher from "../models/teacher";
 import db from '../config/database';
+import TeacherSelectOptions from "../models/teacherSelectionOptions";
 
 export default class TeacherDAL {
 
@@ -16,16 +17,21 @@ export default class TeacherDAL {
         }
     }
 
-    public static async getTeachers(showDeleted: boolean = false): Promise<Teacher[]> {
+    public static async getTeachers(selectOptions: TeacherSelectOptions): Promise<Teacher[]> {
         let teachers: Teacher[] = [];
         let t: any;
+        let params: any[] = []
 
         try {
-            let query: string = 'SELECT * FROM teachers';
+            let query: string = 'SELECT * FROM teachers WHERE 1=1';
 
-            if (!showDeleted) query += ' WHERE deleted = false';
+            if (!selectOptions?.showDeleted) query += ' AND deleted = false';
+            if (selectOptions.collegeId) {
+                query += ` AND collegeId = $${params.length + 1}`;
+                params.push(selectOptions.collegeId);
+            }
 
-            t = (await db.query(query, [])).rows;
+            t = (await db.query(query, params)).rows;
         } catch (err) {
             throw err;
         }
