@@ -33,6 +33,7 @@ export default class ResearchLineDAL {
 
             for (let x in r) {
                 researchLines.push({
+                    id: r[x].id,
                     name: r[x].name,
                     collegeId: r[x].collegeid
                 });

@@ -5,13 +5,7 @@ import PaginationObject from '../models/paginationObject';
 import PaginationService from '../services/paginationService';
 
 const createResearchLine = async (req: Request, res: Response, next: NextFunction) => {
-    const { name, teachers, collegeId } = req.body;
-
-    const researchLine: ResearchLine = {
-        name,
-        teachers,
-        collegeId
-    }
+    const researchLine: ResearchLine = req.body;
 
     try {
         await ResearchLineDAL.createResearchLine(researchLine);
