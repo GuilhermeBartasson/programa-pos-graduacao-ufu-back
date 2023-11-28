@@ -1,6 +1,7 @@
 import Teacher from "../models/teacher";
 import db from '../config/database';
 import TeacherSelectOptions from "../models/teacherSelectionOptions";
+import { QueryResult } from "pg";
 
 export default class TeacherDAL {
 
@@ -55,6 +56,14 @@ export default class TeacherDAL {
         const { id, name, email, personalPageLink, collegeId } = teacher;
 
         try {
+            let bound: number | undefined = await this.teacherIsBoundToResearchLine(id);
+
+            if (bound) {
+                let _collegeId = await this.getTeacherCollegeId(id);
+
+                if (_collegeId !== collegeId) throw 100;
+            }
+
             await db.query(
                 "UPDATE teachers SET name = $1, email = $2, personalPageLink = $3, collegeId = $5 WHERE id = $4",
                 [name, email, personalPageLink, id, collegeId]
@@ -67,6 +76,38 @@ export default class TeacherDAL {
     public static async deleteTeacher(id: number): Promise<void> {
         try {
             await db.query("UPDATE teachers SET deleted = true WHERE id = $1", [id]);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    private static async teacherIsBoundToResearchLine(teacherId: number): Promise<number | undefined> {
+        let response: QueryResult<any>;
+        
+        try {
+            response = await db.query("SELECT researchLineId FROM researchLineTeachers WHERE teacherId = $1 LIMIT 1", [teacherId]);
+
+            if (response.rowCount > 0) {
+                return response.rows[0].researchlineid;
+            } else {
+                return undefined;
+            }
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    private static async getTeacherCollegeId(teacherId: number): Promise<number | undefined> {
+        let response: QueryResult<any>;
+
+        try {
+            response = await db.query("SELECT collegeId FROM teachers WHERE id = $1", [teacherId]);
+
+            if (response.rowCount > 0) {
+                return response.rows[0].collegeid;
+            } else {
+                return undefined;
+            }
         } catch (err) {
             throw err;
         }

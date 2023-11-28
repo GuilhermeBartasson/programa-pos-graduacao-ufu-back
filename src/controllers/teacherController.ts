@@ -53,6 +53,10 @@ const updateTeacher = async (req: Request, res: Response, next: NextFunction) =>
     } catch (err: any) {
         console.error(err);
 
+        if (err === 100) {
+            return res.status(500).send('Não é possível alterar o vinculo de faculdade de um docente já vinculado a uma linha de pesquisa');
+        }
+
         return res.status(500).send('Houve um erro ao editar esse docente');
     }
 
