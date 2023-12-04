@@ -21,12 +21,12 @@ const createResearchLine = async (req: Request, res: Response, next: NextFunctio
 }
 
 const getResearchLines = async (req: Request, res: Response, next: NextFunction) => {
-    const { paginate, page, size } = req.query;
+    const { paginate, page, size, collegeId } = req.query;
     let response: PaginationObject = { page: 0, size: 0, pageCount: 0, data: [] };
     let researchLines: ResearchLine[] = [];
 
     try {
-        researchLines = await ResearchLineDAL.getResearchLines();
+        researchLines = await ResearchLineDAL.getResearchLines(false, collegeId as string);
     } catch (err) {
         console.error(err);
         return res.status(500).send('Houve um erro ao buscar pelas linhas de pesquisa');

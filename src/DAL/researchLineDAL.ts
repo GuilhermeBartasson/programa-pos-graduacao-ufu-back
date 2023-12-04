@@ -20,16 +20,21 @@ export default class ResearchLineDAL {
         }
     }
 
-    public static async getResearchLines(showDeleted: boolean = false): Promise<ResearchLine[]> {
+    public static async getResearchLines(showDeleted: boolean = false, collegeId?: string | undefined): Promise<ResearchLine[]> {
         let researchLines: ResearchLine[] = [];
         let r: any;
+        let params: any[] = [];
 
         try {
-            let query: string = 'SELECT * FROM researchLines'
+            let query: string = 'SELECT * FROM researchLines WHERE 1 = 1';
 
-            if (!showDeleted) query += ' WHERE deleted = false';
+            if (!showDeleted) query += ' AND deleted = false';
+            if (collegeId) {
+                query += ` AND collegeId = $${params.length + 1}`;
+                params.push(collegeId);
+            }
 
-            r = (await db.query(query, [])).rows;
+            r = (await db.query(query, params)).rows;
 
             for (let x in r) {
                 researchLines.push({
