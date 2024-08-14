@@ -3,7 +3,6 @@ import TeacherDAL from '../DAL/teacherDAL';
 import Teacher from '../models/teacher';
 import PaginationObject from '../models/paginationObject';
 import PaginationService from '../services/paginationService';
-import TeacherSelectOptions from '../models/teacherSelectionOptions';
 
 const createTeacher = async (req: Request, res: Response, next: NextFunction) => {
     const teacher = req.body;
@@ -27,7 +26,10 @@ const getTeachers = async (req: Request, res: Response, next: NextFunction) => {
     let teachers: Teacher[] = [];
 
     try {
-        teachers = await TeacherDAL.getTeachers({ showDeleted, collegeId } as TeacherSelectOptions);
+        if (collegeId !== undefined)
+            teachers = await TeacherDAL.getTeachers(parseInt(collegeId as string), showDeleted === 'true');
+        else
+            return res.status(400).send('Id de faculdade não informado');    
     } catch (err) {
         console.error(err);
         return res.status(500).send('Houve um erro ao buscar por docentes');

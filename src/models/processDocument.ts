@@ -1,5 +1,6 @@
 import AccountingType from "../enums/accountingType";
 import Modality from "../enums/modality";
+import Stages from "../enums/stages";
 import VacancyType from "../enums/vacancyType";
 
 export default interface ProcessDocument {
@@ -7,11 +8,12 @@ export default interface ProcessDocument {
     processId: number;
     name: string;
     description: string;
-    stage: string;
+    stage: Stages;
     modality: Modality;
     vacancyType: VacancyType;
     accountingType: AccountingType;
     accountingValue: number;
+    evaluated: boolean;
     allowMultipleSubmissions: boolean;
     deleted: boolean;
 }
