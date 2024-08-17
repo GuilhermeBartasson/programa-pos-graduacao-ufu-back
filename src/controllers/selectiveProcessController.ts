@@ -1,11 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import selectiveProcessDAL from '../DAL/selectiveProcessDAL';
+import SelectiveProcess from '../models/selectiveProcess';
 
 const createSelectiveProcess = async (req: Request, res: Response, next: NextFunction) => {
     const { selectiveProcess } = req.body;
 
+    let sp: SelectiveProcess = selectiveProcess;
+
     try {
-        await selectiveProcessDAL.createSelectiveProcess(selectiveProcess);
+        await selectiveProcessDAL.createSelectiveProcess(sp.name, sp.collegeId, sp.dates, sp.createdBy);
     } catch (err) {
         console.error(err);
 
