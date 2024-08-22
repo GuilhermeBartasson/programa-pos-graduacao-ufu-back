@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { Pool, PoolClient } from 'pg';
 import 'dotenv/config'
 
 const pool = new Pool({
@@ -13,4 +13,10 @@ const query = (text: string, params: any[]) => {
     return pool.query(text, params);
 }
 
-export default { query };
+const getDbClient = async (): Promise<PoolClient> => {
+    const client = await pool.connect();
+
+    return client;
+}
+
+export default { query, getDbClient };
