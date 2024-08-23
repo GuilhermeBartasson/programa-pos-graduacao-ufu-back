@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import selectiveProcessDAL from '../DAL/selectiveProcessDAL';
 import vacancyDAL from '../DAL/vacancyDAL';
+import subscriptionFormFieldDAL from '../DAL/subscriptionFormFieldDAL';
 import SelectiveProcess from '../models/selectiveProcess';
 import db from '../config/database';
 import { QueryResult } from 'pg';
@@ -23,6 +24,7 @@ const createSelectiveProcess = async (req: Request, res: Response, next: NextFun
 
         const processId = createProcessResult?.rows[0].id;
 
+        // Saving vacancy data for the masters modality
         if (sp.mastersVacancy !== undefined) {
             sp.mastersVacancy.forEach(async (mastersVacancy) => {
                 if (mastersVacancy.regularVacancy !== undefined) {
@@ -35,6 +37,7 @@ const createSelectiveProcess = async (req: Request, res: Response, next: NextFun
             });
         }
 
+        // Saving vacancy data for the doctorate modality
         if (sp.doctorateVacancy !== undefined) {
             sp.doctorateVacancy.forEach(async (doctorateVacancy) => {
                 if (doctorateVacancy.vacancyPeriods !== undefined) {
@@ -42,6 +45,13 @@ const createSelectiveProcess = async (req: Request, res: Response, next: NextFun
                         await vacancyDAL.createVacancy(period, Modality.Doutorado, TargetPublic.Regular, processId, doctorateVacancy.researchLineId, period.period, client);
                     });
                 }
+            });
+        }
+
+        // Saving form fields
+        if (sp.subscriptionForm !== undefined) {
+            sp.subscriptionForm.forEach(async (formField) => {
+                subscriptionFormFieldDAL.createSubscriptionFormField(processId, formField, client);
             });
         }
 

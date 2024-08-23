@@ -10,7 +10,7 @@ export default class VacancyDAL {
         vacancy: Vacancy, modality: Modality, targetPublic: TargetPublic, processId: number, researchLineId: number, period?: string, client?: PoolClient
     ): Promise<QueryResult<any> | undefined> {
         let result: QueryResult<any> | undefined;
-        console.log(period);
+
         try {
             const query: string =   "INSERT INTO vacancy (selectiveProcessId, researchLineId, broadCompetition, ppi, pcd, humanitaryPolitics, modality, targetPublic, timePeriod, deleted) " +
                                     "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, false)"
