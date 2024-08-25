@@ -37,7 +37,7 @@ const getTeachers = async (req: Request, res: Response, next: NextFunction) => {
 
     if (paginate === 'true') {
         if (size === undefined || page === undefined)
-            return res.send(500).send('Os dados de paginação não foram informados ou foram informados de maneira incorreta');
+            return res.send(400).send('Os dados de paginação não foram informados ou foram informados de maneira incorreta');
 
         response = PaginationService.paginate(parseInt(page as string), parseInt(size as string), teachers);
     } else {

@@ -22,7 +22,7 @@ export default class TeacherDAL {
         let t: any;
 
         try {
-            t = (await db.query(`SELECT * FROM teachers WHERE 1=1 AND deleted = $1 AND collegeId = $2`, [showDeleted, collegeId])).rows;
+            t = (await db.query(`SELECT * FROM teachers WHERE deleted = $1 AND collegeId = $2`, [showDeleted, collegeId])).rows;
         } catch (err) {
             throw err;
         }

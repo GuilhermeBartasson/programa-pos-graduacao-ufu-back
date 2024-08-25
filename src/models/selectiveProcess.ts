@@ -8,11 +8,11 @@ export default interface SelectiveProcess {
     id: number;
     name: string;
     dates: SelectiveProcessDates;
-    mastersVacancy: ResearchLineMastersVacancy[];
-    doctorateVacancy: ResearchLineDoctorateVacancy[];
-    subscriptionForm: SubscriptionFormField[];
-    personalDocuments: ProcessDocument[];
-    evaluatedDocuments: ProcessDocument[];
+    mastersVacancy?: ResearchLineMastersVacancy[];
+    doctorateVacancy?: ResearchLineDoctorateVacancy[];
+    subscriptionForm?: SubscriptionFormField[];
+    personalDocuments?: ProcessDocument[];
+    evaluatedDocuments?: ProcessDocument[];
     collegeId: number;
     active: boolean;
     deleted: boolean;

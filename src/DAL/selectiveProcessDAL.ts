@@ -1,6 +1,7 @@
 import { PoolClient, QueryResult } from 'pg';
 import db from '../config/database';
 import SelectiveProcessDates from '../models/selectiveProcessDates';
+import SelectiveProcess from '../models/selectiveProcess';
 
 export default class selectiveProcessDAL {
 
@@ -22,6 +23,80 @@ export default class selectiveProcessDAL {
         }
 
         return result;
+    }
+
+    public static async getSelectiveProcessesByCollegeId(collegeId: number, showDeleted: boolean = false): Promise<SelectiveProcess[]> {
+        let result: QueryResult<any> | undefined;
+        const selectiveProcesses: SelectiveProcess[] = [];
+
+        try {
+            const query: string = "SELECT * FROM selectiveProcesses WHERE collegeId = $1 AND deleted = $2";
+            const values: any[] = [collegeId, showDeleted];
+
+            result = await db.query(query, values);
+
+            if (result.rowCount > 0) {
+                result.rows.forEach(row => {
+                    selectiveProcesses.push({
+                        id: row.id,
+                        name: row.name,
+                        dates: {
+                            startDate: row.startDate,
+                            endDate: row.endDate,
+                            homologationDate: row.homologationDate,
+                            subscriptionEndDate: row.applicationLimitDate,
+                            divulgationDate: row.DivulgationDate
+                        },
+                        collegeId: row.collegeId,
+                        active: row.active,
+                        status: row.status,
+                        deleted: row.deleted,
+                        createdBy: row.createdBy
+                    });
+                });
+            }
+        } catch (err) {
+            throw err;
+        }
+
+        return selectiveProcesses;
+    }
+
+    public static async getSelectiveProcessById(processId: number): Promise<SelectiveProcess | undefined> {
+        let result: QueryResult<any> | undefined;
+        let selectiveProcess: SelectiveProcess | undefined;
+
+        try {
+            const query: string = "SELECT * FROM selectiveProcesses WHERE id = $1";
+            const values: any[] = [processId];
+
+            result = await db.query(query, values);
+
+            if (result.rowCount > 0) {
+                let row: any = result.rows[0];
+
+                selectiveProcess = {
+                    id: row.id,
+                        name: row.name,
+                        dates: {
+                            startDate: row.startDate,
+                            endDate: row.endDate,
+                            homologationDate: row.homologationDate,
+                            subscriptionEndDate: row.applicationLimitDate,
+                            divulgationDate: row.DivulgationDate
+                        },
+                        collegeId: row.collegeId,
+                        active: row.active,
+                        status: row.status,
+                        deleted: row.deleted,
+                        createdBy: row.createdBy
+                }
+            }
+        } catch (err) {
+            throw err;
+        }
+
+        return selectiveProcess
     }
 
 }
