@@ -18,46 +18,57 @@ export default class TeacherDAL {
     }
 
     public static async getTeachers(collegeId: number, showDeleted: boolean = false): Promise<Teacher[]> {
-        let teachers: Teacher[] = [];
-        let t: any;
+        let response: Teacher[] = [];
+        let result: QueryResult<any> | undefined;
 
         try {
-            t = (await db.query(`SELECT * FROM teachers WHERE deleted = $1 AND collegeId = $2`, [showDeleted, collegeId])).rows;
+            let query: string = "SELECT * FROM teachers WHERE collegeId = $1";
+            const values: any[] = [collegeId];
+
+            if (!showDeleted) query += " AND deleted = false";
+
+            result = await db.query(query, values);
+
+            if (result.rowCount > 0) {
+                result.rows.forEach(row => {
+                    response.push({
+                        personalPageLink: row.personalpagelink,
+                        name: row.name,
+                        email: row.email,
+                        id: row.id,
+                        collegeId: row.collegeid,
+                        active: row.active,
+                        deleted: row.deleted
+                    });
+                });
+            }
         } catch (err) {
             throw err;
         }
 
-        for (let x in t) {
-            teachers.push({
-                personalPageLink: t[x].personalpagelink,
-                name: t[x].name,
-                email: t[x].email,
-                id: t[x].id,
-                collegeId: t[x].collegeid,
-                active: t[x].active,
-                deleted: t[x].deleted
-            });
-        }
-
-        return teachers;
+        return response;
     }
 
     public static async updateTeacher(teacher: Teacher): Promise<void> {
         const { id, name, email, personalPageLink, collegeId } = teacher;
 
         try {
-            let bound: number | undefined = await this.teacherIsBoundToResearchLine(id);
+            if (id !== undefined) {
+                let bound: number | undefined = await this.teacherIsBoundToResearchLine(id);
 
-            if (bound) {
-                let _collegeId = await this.getTeacherCollegeId(id);
+                if (bound) {
+                    let _collegeId = await this.getTeacherCollegeId(id);
 
-                if (_collegeId !== collegeId) throw 100;
+                    if (_collegeId !== collegeId) throw 100;
+                }
+
+                await db.query(
+                    "UPDATE teachers SET name = $1, email = $2, personalPageLink = $3, collegeId = $5 WHERE id = $4",
+                    [name, email, personalPageLink, id, collegeId]
+                );
+            } else {
+                throw 'id de docente não encontrada';
             }
-
-            await db.query(
-                "UPDATE teachers SET name = $1, email = $2, personalPageLink = $3, collegeId = $5 WHERE id = $4",
-                [name, email, personalPageLink, id, collegeId]
-            );
         } catch (err) {
             throw err;
         }

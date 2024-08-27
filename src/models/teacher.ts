@@ -1,5 +1,5 @@
 export default interface Teacher {
-    id: number;
+    id?: number;
     name: string;
     collegeId: number;
     personalPageLink: string;

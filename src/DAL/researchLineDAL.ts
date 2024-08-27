@@ -1,3 +1,4 @@
+import { QueryResult } from 'pg';
 import db from '../config/database';
 import ResearchLine from '../models/researchLine';
 import Teacher from '../models/teacher';
@@ -20,46 +21,68 @@ export default class ResearchLineDAL {
         }
     }
 
-    public static async getResearchLines(showDeleted: boolean = false, collegeId?: string | undefined): Promise<ResearchLine[]> {
-        let researchLines: ResearchLine[] = [];
-        let r: any;
-        let params: any[] = [];
+    public static async getResearchLines(collegeId: number, showDeleted: boolean = false): Promise<ResearchLine[]> {
+        let response: ResearchLine[] = [];
+        let result: QueryResult<any> | undefined;
 
         try {
-            let query: string = 'SELECT * FROM researchLines WHERE 1 = 1';
+            let query: string = "SELECT * FROM researchLines WHERE collegeId = $1";
+            const values: any[] = [collegeId];
 
             if (!showDeleted) query += ' AND deleted = false';
-            if (collegeId) {
-                query += ` AND collegeId = $${params.length + 1}`;
-                params.push(collegeId);
-            }
 
-            r = (await db.query(query, params)).rows;
+            result = await db.query(query, values);
 
-            for (let x in r) {
-                researchLines.push({
-                    id: r[x].id,
-                    name: r[x].name,
-                    collegeId: r[x].collegeid
+            if (result.rowCount > 0) {
+                result.rows.forEach(async (row: any) => {
+                    let researchLine: ResearchLine = {
+                        id: row.id,
+                        name: row.name,
+                        collegeId: row.collegeid
+                    }
+
+                    researchLine.teachers = await this.getResearchLineTeachers(row.id);
+
+                    response.push(researchLine);
                 });
-            }
-
-            for (let x in researchLines) {
-                let teachers: any[] = (
-                    await db.query(
-                        'SELECT t.id, t.name, t.personalPageLink as personalPageLink, t.active, t.deleted ' + 
-                        'FROM teachers t INNER JOIN researchLineTeachers rt ON t.id = rt.teacherId ' + 
-                        'WHERE rt.researchLineId = $1', 
-                        [researchLines[parseInt(x)].id])
-                    ).rows;
-
-                researchLines[parseInt(x)].teachers = teachers;
             }
         } catch (err) {
             throw err;
         }
 
-        return researchLines;
+        return response;
+    }
+
+    public static async getResearchLineTeachers(researchLineId: number): Promise<Teacher[]> {
+        const response: Teacher[] = [];
+        let result: QueryResult<any> | undefined;
+
+        try {
+            const query: string =   'SELECT t.id, t.collegeId, t.email, t.name, t.personalPageLink as personalPageLink, t.active, t.deleted ' + 
+                                    'FROM teachers t INNER JOIN researchLineTeachers rt ON t.id = rt.teacherId ' + 
+                                    'WHERE rt.researchLineId = $1';
+            const values: any = [researchLineId];
+
+            result = await db.query(query, values);
+
+            if (result.rowCount > 0) {
+                result.rows.forEach(row => {
+                    response.push({
+                        id: row.id,
+                        collegeId: row.id,
+                        name: row.name,
+                        personalPageLink: row.personalPageLink,
+                        email: row.email,
+                        active: row.active,
+                        deleted: row.deleted
+                    });
+                });
+            }
+        } catch (err) {
+            throw err;
+        }
+
+        return response;
     }
 
     public static async deleteResearchLine(id: number): Promise<void> {
@@ -78,7 +101,9 @@ export default class ResearchLineDAL {
 
             let teacherIds: number[] = [];
 
-            for (let x in teachers) teacherIds.push(teachers[parseInt(x)].id);
+            teachers?.forEach(teacher => {
+                if (teacher.id !== undefined) teacherIds.push(teacher.id);
+            });
 
             await db.query('DELETE FROM researchLineTeachers WHERE researchLineId = $1 AND NOT (teacherId = ANY ($2))', [researchLine.id, teacherIds]);
 

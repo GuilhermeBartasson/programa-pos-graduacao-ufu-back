@@ -26,7 +26,7 @@ const getResearchLines = async (req: Request, res: Response, next: NextFunction)
     let researchLines: ResearchLine[] = [];
 
     try {
-        researchLines = await ResearchLineDAL.getResearchLines(false, collegeId as string);
+        researchLines = await ResearchLineDAL.getResearchLines(parseInt(collegeId as string));
     } catch (err) {
         console.error(err);
         return res.status(500).send('Houve um erro ao buscar pelas linhas de pesquisa');

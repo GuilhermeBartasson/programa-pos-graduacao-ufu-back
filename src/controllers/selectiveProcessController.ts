@@ -6,15 +6,11 @@ import processDocumentDAL from '../DAL/processDocumentDAL';
 import SelectiveProcess from '../models/selectiveProcess';
 import db from '../config/database';
 import { QueryResult } from 'pg';
-import Modality from '../enums/modality';
-import TargetPublic from '../enums/targetPublic';
 import ProcessDocument from '../models/processDocument';
 import SubscriptionFormField from '../models/subscriptionFormField';
-import DoctorateVacancy from '../models/doctorateVacancy';
-import ResearchLineDoctorateVacancy from '../models/researchLineDoctorateVacancy';
-import ResearchLineMastersVacancy from '../models/researchLineMastersVacancy';
 import PaginationObject from '../models/paginationObject';
 import PaginationService from '../services/paginationService';
+import Vacancy from '../models/vacancy';
 
 const createSelectiveProcess = async (req: Request, res: Response, next: NextFunction) => {
     const { selectiveProcess } = req.body;
@@ -30,27 +26,10 @@ const createSelectiveProcess = async (req: Request, res: Response, next: NextFun
 
         const processId = createProcessResult?.rows[0].id;
 
-        // Saving vacancy data for the masters modality
-        if (sp.mastersVacancy !== undefined) {
-            sp.mastersVacancy.forEach(async (mastersVacancy: ResearchLineMastersVacancy) => {
-                if (mastersVacancy.regularVacancy !== undefined) {
-                    await vacancyDAL.createVacancy(mastersVacancy.regularVacancy, Modality.Mestrado, TargetPublic.Regular, processId, mastersVacancy.researchLineId, undefined, client);
-                }
-
-                if (mastersVacancy.specialVacancy !== undefined) {
-                    await vacancyDAL.createVacancy(mastersVacancy.specialVacancy, Modality.Mestrado, TargetPublic.Special, processId, mastersVacancy.researchLineId, undefined, client);
-                }
-            });
-        }
-
-        // Saving vacancy data for the doctorate modality
-        if (sp.doctorateVacancy !== undefined) {
-            sp.doctorateVacancy.forEach(async (doctorateVacancy: ResearchLineDoctorateVacancy) => {
-                if (doctorateVacancy.vacancyPeriods !== undefined) {
-                    doctorateVacancy.vacancyPeriods.forEach(async (period: DoctorateVacancy) => {
-                        await vacancyDAL.createVacancy(period, Modality.Doutorado, TargetPublic.Regular, processId, doctorateVacancy.researchLineId, period.period, client);
-                    });
-                }
+        // Saving vacancy data
+        if (sp.vacancies !== undefined) {
+            sp.vacancies.forEach(async (vacancy: Vacancy) => {
+                vacancyDAL.createVacancy(vacancy, client);
             });
         }
 
@@ -120,14 +99,19 @@ const getSelectiveProcessFullInformation = async(req: Request, res: Response, ne
     let selectiveProcessCover: SelectiveProcess | undefined;
 
     try {
-        if (processId !== undefined)
+        if (processId !== undefined) {
             selectiveProcessCover = await selectiveProcessDAL.getSelectiveProcessById(parseInt(processId as string));
 
-            if (selectiveProcessCover !== undefined) response = selectiveProcessCover;
+            if (selectiveProcessCover !== undefined) {
+                response = selectiveProcessCover;
 
+                response.vacancies = await vacancyDAL.getVacanciesByProcessId(parseInt(processId as string));
+                response.subscriptionForm = await subscriptionFormFieldDAL.getSubscriptionFormFieldsByProcessId(parseInt(processId as string));
+            }
             
-        else
+        } else {
             return res.status(400).send('Id do processo seletivo não informado');
+        }
     } catch (err) {
         console.error(err);
         return res.status(500).send('Houve um erro ao busca as informações deste processo seletivo');

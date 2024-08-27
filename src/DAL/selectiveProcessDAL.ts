@@ -30,8 +30,10 @@ export default class selectiveProcessDAL {
         const selectiveProcesses: SelectiveProcess[] = [];
 
         try {
-            const query: string = "SELECT * FROM selectiveProcesses WHERE collegeId = $1 AND deleted = $2";
-            const values: any[] = [collegeId, showDeleted];
+            let query: string = "SELECT * FROM selectiveProcesses WHERE collegeId = $1";
+            const values: any[] = [collegeId];
+
+            if (!showDeleted) query += " AND deleted = false";
 
             result = await db.query(query, values);
 

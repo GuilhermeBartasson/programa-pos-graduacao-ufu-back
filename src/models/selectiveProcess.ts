@@ -1,15 +1,13 @@
 import ProcessDocument from "./processDocument";
-import ResearchLineDoctorateVacancy from "./researchLineDoctorateVacancy";
-import ResearchLineMastersVacancy from "./researchLineMastersVacancy";
 import SelectiveProcessDates from "./selectiveProcessDates";
 import SubscriptionFormField from "./subscriptionFormField";
+import Vacancy from "./vacancy";
 
 export default interface SelectiveProcess {
     id: number;
     name: string;
     dates: SelectiveProcessDates;
-    mastersVacancy?: ResearchLineMastersVacancy[];
-    doctorateVacancy?: ResearchLineDoctorateVacancy[];
+    vacancies?: Vacancy[];
     subscriptionForm?: SubscriptionFormField[];
     personalDocuments?: ProcessDocument[];
     evaluatedDocuments?: ProcessDocument[];
