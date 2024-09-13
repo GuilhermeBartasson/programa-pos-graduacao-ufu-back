@@ -3,7 +3,7 @@ import TargetPublic from "../enums/targetPublic";
 
 export default interface Vacancy {
     id?: number;
-    selectiveProcessId: number;
+    selectiveProcessId?: number;
     researchLineId: number;
     broadCompetition: number;
     ppi: number;

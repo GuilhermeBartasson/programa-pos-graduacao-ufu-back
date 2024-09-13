@@ -21,7 +21,7 @@ export default class ResearchLineDAL {
         }
     }
 
-    public static async getResearchLines(collegeId: number, showDeleted: boolean = false): Promise<ResearchLine[]> {
+    public static async getResearchLines(collegeId: string, showDeleted: boolean = false): Promise<ResearchLine[]> {
         let response: ResearchLine[] = [];
         let result: QueryResult<any> | undefined;
 
@@ -30,11 +30,11 @@ export default class ResearchLineDAL {
             const values: any[] = [collegeId];
 
             if (!showDeleted) query += ' AND deleted = false';
-
+            
             result = await db.query(query, values);
-
+            
             if (result.rowCount > 0) {
-                result.rows.forEach(async (row: any) => {
+                await Promise.all(result.rows.map(async (row: any) => {
                     let researchLine: ResearchLine = {
                         id: row.id,
                         name: row.name,
@@ -44,7 +44,7 @@ export default class ResearchLineDAL {
                     researchLine.teachers = await this.getResearchLineTeachers(row.id);
 
                     response.push(researchLine);
-                });
+                }));
             }
         } catch (err) {
             throw err;

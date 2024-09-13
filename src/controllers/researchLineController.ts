@@ -26,12 +26,12 @@ const getResearchLines = async (req: Request, res: Response, next: NextFunction)
     let researchLines: ResearchLine[] = [];
 
     try {
-        researchLines = await ResearchLineDAL.getResearchLines(parseInt(collegeId as string));
+        researchLines = await ResearchLineDAL.getResearchLines(collegeId as string);
     } catch (err) {
         console.error(err);
         return res.status(500).send('Houve um erro ao buscar pelas linhas de pesquisa');
     }
-    
+
     if (paginate === 'true') {
         if (size === undefined || page === undefined)
             return res.send(500).send('Os dados de paginação não foram informados ou foram informados de maneira incorreta');
