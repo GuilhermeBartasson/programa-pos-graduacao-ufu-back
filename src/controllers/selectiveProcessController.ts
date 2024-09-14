@@ -124,7 +124,7 @@ const deleteSelectiveProcess = async(req: Request, res: Response, next: NextFunc
     const { id } = req.query;
     const client = await db.getDbClient();
 
-    await client.query('B   EGIN');
+    await client.query('BEGIN');
 
     try {
         await ProcessDocumentDAL.deleteDocumentsByProcessId(parseInt(id as string), client);

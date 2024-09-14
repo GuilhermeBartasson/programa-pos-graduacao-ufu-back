@@ -24,7 +24,7 @@ export default class ProcessDocumentDAL {
 
     public static async deleteDocumentsByProcessId(processId: number, client?: PoolClient): Promise<void> {
         try {
-            const query: string = 'DELETE FROM documents WHERE processId = $1';
+            const query: string = 'DELETE FROM processDocument WHERE processId = $1';
             const values: any[] = [processId];
 
             if (client === undefined) await db.query(query, values);
