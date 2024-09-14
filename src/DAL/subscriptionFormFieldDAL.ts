@@ -120,4 +120,36 @@ export default class SubscriptionFormFieldDAL {
         return response;
     }
 
+    public static async deleteSubscriptionFormFieldByProcessId(processId: number, client?: PoolClient): Promise<void> {
+        try {
+            const formFields: SubscriptionFormField[] = await this.getSubscriptionFormFieldsByProcessId(processId, true);
+
+            await Promise.all(formFields.map(async (formField: SubscriptionFormField) => {
+                await this.deleteSubscriptionFormFieldOptionByFormFieldId(formField.id, client);
+            }));
+
+            const query: string = 'DELETE FROM subscriptionFormFields WHERE selectiveProcessId = $1';
+            const values: any[] = [processId];
+
+            if (client === undefined) db.query(query, values);
+            else client.query(query, values);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    public static async deleteSubscriptionFormFieldOptionByFormFieldId(formFieldId?: number, client?: PoolClient): Promise<void> {
+        if (formFieldId !== undefined) {
+            try {
+                const query: string = 'DELETE FROM subscriptionFormFieldOptions WHERE subscriptionFormFieldId = $1';
+                const values: any[] = [formFieldId];
+
+                if (client === undefined) db.query(query, values);
+                else client.query(query, values);
+            } catch (err) {
+                throw err;
+            }
+        }
+    }
+
 }

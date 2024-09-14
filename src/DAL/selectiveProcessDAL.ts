@@ -25,7 +25,7 @@ export default class selectiveProcessDAL {
         return result;
     }
 
-    public static async getSelectiveProcessesByCollegeId(collegeId: number, showDeleted: boolean = false): Promise<SelectiveProcess[]> {
+    public static async getSelectiveProcessesCoverByCollegeId(collegeId: number, showDeleted: boolean = false): Promise<SelectiveProcess[]> {
         let result: QueryResult<any> | undefined;
         const selectiveProcesses: SelectiveProcess[] = [];
 
@@ -99,6 +99,18 @@ export default class selectiveProcessDAL {
         }
 
         return selectiveProcess
+    }
+
+    public static async deleteSelectiveProcessById(processId: number, client?: PoolClient) {
+        try {
+            const query: string = 'DELETE FROM selectiveProcesses WHERE id = $1';
+            const values: any[] = [processId];
+
+            if (client === undefined) db.query(query, values);
+            else client.query(query, values);
+        } catch (err) {
+            throw err;
+        }
     }
 
 }

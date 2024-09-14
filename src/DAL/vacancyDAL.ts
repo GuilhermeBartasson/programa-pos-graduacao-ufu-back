@@ -21,9 +21,7 @@ export default class VacancyDAL {
         return result;
     }
 
-    public static async getVacanciesByProcessId(
-        processId: number, showDeleted: boolean = false
-    ): Promise<Vacancy[]> {
+    public static async getVacanciesByProcessId(processId: number, showDeleted: boolean = false): Promise<Vacancy[]> {
         const response: Vacancy[] = [];
         let result: QueryResult<any> | undefined;
 
@@ -57,6 +55,18 @@ export default class VacancyDAL {
         }
 
         return response;
+    }
+
+    public static async deleteVacanciesByProcessId(processId: number, client?: PoolClient): Promise<void> {
+        try {
+            const query: string = 'DELETE FROM vacancy WHERE selectiveProcessId = $1';
+            const values: any[] = [processId];
+
+            if (client === undefined) db.query(query, values);
+            else client.query(query, values);
+        } catch (err) {
+            throw err;
+        }
     }
 
 }

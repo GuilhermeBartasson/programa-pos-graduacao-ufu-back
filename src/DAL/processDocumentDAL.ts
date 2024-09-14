@@ -22,4 +22,16 @@ export default class ProcessDocumentDAL {
         return result;
     }
 
+    public static async deleteDocumentsByProcessId(processId: number, client?: PoolClient): Promise<void> {
+        try {
+            const query: string = 'DELETE FROM documents WHERE processId = $1';
+            const values: any[] = [processId];
+
+            if (client === undefined) await db.query(query, values);
+            else client.query(query, values);
+        } catch (err) {
+            throw err;
+        }
+    }
+
 }

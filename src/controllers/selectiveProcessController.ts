@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import selectiveProcessDAL from '../DAL/selectiveProcessDAL';
-import vacancyDAL from '../DAL/vacancyDAL';
-import subscriptionFormFieldDAL from '../DAL/subscriptionFormFieldDAL';
-import processDocumentDAL from '../DAL/processDocumentDAL';
+import SelectiveProcessDAL from '../DAL/selectiveProcessDAL';
+import VacancyDAL from '../DAL/vacancyDAL';
+import SubscriptionFormFieldDAL from '../DAL/subscriptionFormFieldDAL';
 import SelectiveProcess from '../models/selectiveProcess';
 import db from '../config/database';
 import { QueryResult } from 'pg';
@@ -11,6 +10,7 @@ import SubscriptionFormField from '../models/subscriptionFormField';
 import PaginationObject from '../models/paginationObject';
 import PaginationService from '../services/paginationService';
 import Vacancy from '../models/vacancy';
+import ProcessDocumentDAL from '../DAL/processDocumentDAL';
 
 const createSelectiveProcess = async (req: Request, res: Response, next: NextFunction) => {
     const { selectiveProcess } = req.body;
@@ -19,38 +19,38 @@ const createSelectiveProcess = async (req: Request, res: Response, next: NextFun
     const client = await db.getDbClient();
     let createProcessResult: QueryResult<any> | undefined;
 
-    await client.query('BEGIN')
+    await client.query('BEGIN');
 
     try {
-        createProcessResult = await selectiveProcessDAL.createSelectiveProcess(sp.name, sp.collegeId, sp.dates, sp.createdBy, client);
+        createProcessResult = await SelectiveProcessDAL.createSelectiveProcess(sp.name, sp.collegeId, sp.dates, sp.createdBy, client);
 
         const processId = createProcessResult?.rows[0].id;
 
         // Saving vacancy data
         if (sp.vacancies !== undefined) {
             sp.vacancies.forEach(async (vacancy: Vacancy) => {
-                vacancyDAL.createVacancy(vacancy, client);
+                VacancyDAL.createVacancy(vacancy, client);
             });
         }
 
         // Saving form fields
         if (sp.subscriptionForm !== undefined) {
             sp.subscriptionForm.forEach(async (formField: SubscriptionFormField) => {
-                await subscriptionFormFieldDAL.createSubscriptionFormField(processId, formField, client);
+                await SubscriptionFormFieldDAL.createSubscriptionFormField(processId, formField, client);
             });
         }
 
         // Saving documents related to personal information
         if (sp.personalDocuments !== undefined) {
             sp.personalDocuments.forEach(async (document: ProcessDocument) => {
-                await processDocumentDAL.createProcessDocumentDAL(processId, document);
+                await ProcessDocumentDAL.createProcessDocumentDAL(processId, document, client);
             });
         }
 
         // Saving document related to evaluation
         if (sp.evaluatedDocuments !== undefined) {
             sp.evaluatedDocuments.forEach(async (document: ProcessDocument) => {
-                await processDocumentDAL.createProcessDocumentDAL(processId, document);
+                await ProcessDocumentDAL.createProcessDocumentDAL(processId, document, client);
             });
         }
 
@@ -66,14 +66,14 @@ const createSelectiveProcess = async (req: Request, res: Response, next: NextFun
     return res.status(201).send('Processo seletivo criado com sucesso');
 }
 
-const getSelectiveProcessesCoverInformation = async (req: Request, res: Response, next: NextFunction) => {
+const getSelectiveProcessesCover = async (req: Request, res: Response, next: NextFunction) => {
     const { collegeId, paginate, page, size, showDeleted } = req.query;
     let selectiveProcesses: SelectiveProcess[] = [];
     let response: PaginationObject = { page: 0, size: 0, pageCount: 0, data: [] };
 
     try {
         if (collegeId !== undefined)
-            selectiveProcesses = await selectiveProcessDAL.getSelectiveProcessesByCollegeId(parseInt(collegeId as string), showDeleted === 'true');
+            selectiveProcesses = await SelectiveProcessDAL.getSelectiveProcessesCoverByCollegeId(parseInt(collegeId as string), showDeleted === 'true');
         else
             return res.status(400).send('Id de faculdade não informado');
     } catch (err) {
@@ -100,13 +100,13 @@ const getSelectiveProcessFullInformation = async(req: Request, res: Response, ne
 
     try {
         if (processId !== undefined) {
-            selectiveProcessCover = await selectiveProcessDAL.getSelectiveProcessById(parseInt(processId as string));
+            selectiveProcessCover = await SelectiveProcessDAL.getSelectiveProcessById(parseInt(processId as string));
 
             if (selectiveProcessCover !== undefined) {
                 response = selectiveProcessCover;
 
-                response.vacancies = await vacancyDAL.getVacanciesByProcessId(parseInt(processId as string));
-                response.subscriptionForm = await subscriptionFormFieldDAL.getSubscriptionFormFieldsByProcessId(parseInt(processId as string));
+                response.vacancies = await VacancyDAL.getVacanciesByProcessId(parseInt(processId as string));
+                response.subscriptionForm = await SubscriptionFormFieldDAL.getSubscriptionFormFieldsByProcessId(parseInt(processId as string));
             }
             
         } else {
@@ -120,4 +120,28 @@ const getSelectiveProcessFullInformation = async(req: Request, res: Response, ne
     return response;
 }
 
-export default { createSelectiveProcess, getSelectiveProcessesCoverInformation, getSelectiveProcessFullInformation };
+const deleteSelectiveProcess = async(req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.query;
+    const client = await db.getDbClient();
+
+    await client.query('B   EGIN');
+
+    try {
+        await ProcessDocumentDAL.deleteDocumentsByProcessId(parseInt(id as string), client);
+        await SubscriptionFormFieldDAL.deleteSubscriptionFormFieldByProcessId(parseInt(id as string), client);
+        await VacancyDAL.deleteVacanciesByProcessId(parseInt(id as string), client);
+        await SelectiveProcessDAL.deleteSelectiveProcessById(parseInt(id as string), client);
+
+        await client.query('COMMIT');
+    } catch (err: any) {
+        console.error(err);
+        await client.query('ROLLBACK');
+        return res.status(500).send('Houve um erro ao deletar esse docente');
+    } finally {
+        client.release();
+    }
+
+    return res.status(200).send('Processo seletivo deletado');
+}
+
+export default { createSelectiveProcess, getSelectiveProcessesCover, getSelectiveProcessFullInformation, deleteSelectiveProcess };

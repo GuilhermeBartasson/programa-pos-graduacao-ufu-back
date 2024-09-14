@@ -72,7 +72,6 @@ const deleteTeacher = async (req: Request, res: Response, next: NextFunction) =>
         await TeacherDAL.deleteTeacher(parseInt(id as string));
     } catch (err: any) {
         console.error(err);
-
         return res.status(500).send('Houve um erro ao deletar esse docente');
     }
 

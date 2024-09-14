@@ -5,6 +5,7 @@ import authMiddleare from '../middlewares/auth';
 const router = express.Router();
 
 router.post('/createSelectiveProcess', authMiddleare, controller.createSelectiveProcess);
-router.get('/getSelectiveProcessesCoverInformation', authMiddleare, controller.getSelectiveProcessesCoverInformation);
+router.get('/getSelectiveProcessesCover', authMiddleare, controller.getSelectiveProcessesCover);
+router.delete('/deleteSelectiveProcess', authMiddleare, controller.deleteSelectiveProcess)
 
 export default router;
