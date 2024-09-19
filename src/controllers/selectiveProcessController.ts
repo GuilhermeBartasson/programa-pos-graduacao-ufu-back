@@ -22,13 +22,14 @@ const createSelectiveProcess = async (req: Request, res: Response, next: NextFun
     await client.query('BEGIN');
 
     try {
-        createProcessResult = await SelectiveProcessDAL.createSelectiveProcess(sp.name, sp.collegeId, sp.dates, sp.createdBy, client);
+        createProcessResult = await SelectiveProcessDAL.createSelectiveProcess(sp.name, sp.collegeId, sp.createdBy, sp.dates, client);
 
         const processId = createProcessResult?.rows[0].id;
 
         // Saving vacancy data
         if (sp.vacancies !== undefined) {
             sp.vacancies.forEach(async (vacancy: Vacancy) => {
+                vacancy.selectiveProcessId = processId;
                 VacancyDAL.createVacancy(vacancy, client);
             });
         }
