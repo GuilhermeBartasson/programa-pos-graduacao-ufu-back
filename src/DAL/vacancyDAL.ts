@@ -37,15 +37,15 @@ export default class VacancyDAL {
                 result.rows.forEach(row => {
                     response.push({
                         id: row.id,
-                        selectiveProcessId: row.selectiveProcessId,
-                        researchLineId: row.researchLineId,
-                        broadCompetition: row.broadCompetition,
+                        selectiveProcessId: row.selectiveprocessId,
+                        researchLineId: row.researchlineid,
+                        broadCompetition: row.broadcompetition,
                         ppi: row.ppi,
                         pcd: row.pcd,
-                        humanitaryPolitics: row.humanitaryPolitics,
+                        humanitaryPolitics: row.humanitarypolitics,
                         modality: row.modality,
-                        targetPublic: row.targetPublic,
-                        period: row.timePeriod,
+                        targetPublic: row.targetpublic,
+                        period: row.timeperiod,
                         deleted: row.deleted
                     });
                 });

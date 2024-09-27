@@ -97,17 +97,19 @@ const getSelectiveProcessesCover = async (req: Request, res: Response, next: Nex
 const getSelectiveProcessFullInformation = async(req: Request, res: Response, next: NextFunction) => {
     const { processId } = req.query;
     let response: SelectiveProcess | undefined;
-    let selectiveProcessCover: SelectiveProcess | undefined;
 
     try {
         if (processId !== undefined) {
-            selectiveProcessCover = await SelectiveProcessDAL.getSelectiveProcessById(parseInt(processId as string));
+            response = await SelectiveProcessDAL.getSelectiveProcessById(parseInt(processId as string));
 
-            if (selectiveProcessCover !== undefined) {
-                response = selectiveProcessCover;
-
+            if (response !== undefined) {
                 response.vacancies = await VacancyDAL.getVacanciesByProcessId(parseInt(processId as string));
                 response.subscriptionForm = await SubscriptionFormFieldDAL.getSubscriptionFormFieldsByProcessId(parseInt(processId as string));
+
+                let processDocuments: ProcessDocument[] = await ProcessDocumentDAL.getDocumentsByProcessId(parseInt(processId as string));
+
+                response.personalDocuments = processDocuments.filter((document: ProcessDocument) => document.evaluated === false);
+                response.evaluatedDocuments = processDocuments.filter((document: ProcessDocument) => document.evaluated === true);
             }
             
         } else {
@@ -118,7 +120,7 @@ const getSelectiveProcessFullInformation = async(req: Request, res: Response, ne
         return res.status(500).send('Houve um erro ao busca as informações deste processo seletivo');
     }
 
-    return response;
+    res.status(200).send(response);
 }
 
 const deleteSelectiveProcess = async(req: Request, res: Response, next: NextFunction) => {

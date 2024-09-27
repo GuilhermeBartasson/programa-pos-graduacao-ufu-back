@@ -71,7 +71,7 @@ export default class ResearchLineDAL {
                         id: row.id,
                         collegeId: row.id,
                         name: row.name,
-                        personalPageLink: row.personalPageLink,
+                        personalPageLink: row.personalpagelink,
                         email: row.email,
                         active: row.active,
                         deleted: row.deleted

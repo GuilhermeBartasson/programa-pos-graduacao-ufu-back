@@ -68,13 +68,13 @@ export default class SubscriptionFormFieldDAL {
                 result.rows.forEach(async (row: any) => {
                     let subscriptionFormField: SubscriptionFormField = {
                         id: row.id,
-                        selectiveProcessId: row.selectiveProcessId,
+                        selectiveProcessId: row.selectiveprocessid,
                         name: row.name,
                         description: row.description,
-                        position: row.formPosition,
+                        position: row.formposition,
                         stage: row.stage,
                         deleted: row.deleted,
-                        dataType: row.dataType
+                        dataType: row.datatype
                     }
 
                     if ([SubscriptionFormFieldDataType.checkbox, SubscriptionFormFieldDataType.select].includes(row.dataType)) {
@@ -107,8 +107,8 @@ export default class SubscriptionFormFieldDAL {
                 result.rows.forEach(row => {
                     response.push({
                         id: row.id,
-                        subscriptionFormFieldId: row.subscriptionFormFieldId,
-                        option: row.optionName,
+                        subscriptionFormFieldId: row.subscriptionformfieldid,
+                        option: row.optionname,
                         deleted: row.deleted
                     });
                 });

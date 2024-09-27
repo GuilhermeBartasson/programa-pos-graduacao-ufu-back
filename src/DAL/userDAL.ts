@@ -55,7 +55,7 @@ export default class UserDAL {
                     id: u.id,
                     email: u.email,
                     firstName: u.firstname,
-                    middleName: u.middleName,
+                    middleName: u.middlename,
                     lastName: u.lastname,
                     password: u.password,
                     salt: u.salt,

@@ -52,17 +52,17 @@ export default class selectiveProcessDAL {
                         id: row.id,
                         name: row.name,
                         dates: {
-                            startDate: row.startDate,
-                            endDate: row.endDate,
-                            homologationDate: row.homologationDate,
-                            subscriptionEndDate: row.applicationLimitDate,
-                            divulgationDate: row.DivulgationDate
+                            startDate: row.startdate,
+                            endDate: row.enddate,
+                            homologationDate: row.homologationdate,
+                            subscriptionEndDate: row.applicationlimitdate,
+                            divulgationDate: row.divulgationdate
                         },
-                        collegeId: row.collegeId,
+                        collegeId: row.collegeid,
                         active: row.active,
                         status: row.status,
                         deleted: row.deleted,
-                        createdBy: row.createdBy
+                        createdBy: row.createdby
                     });
                 });
             }
@@ -88,19 +88,19 @@ export default class selectiveProcessDAL {
 
                 selectiveProcess = {
                     id: row.id,
-                        name: row.name,
-                        dates: {
-                            startDate: row.startDate,
-                            endDate: row.endDate,
-                            homologationDate: row.homologationDate,
-                            subscriptionEndDate: row.applicationLimitDate,
-                            divulgationDate: row.DivulgationDate
-                        },
-                        collegeId: row.collegeId,
-                        active: row.active,
-                        status: row.status,
-                        deleted: row.deleted,
-                        createdBy: row.createdBy
+                    name: row.name,
+                    dates: {
+                        startDate: row.startdate,
+                        endDate: row.enddate,
+                        homologationDate: row.homologationdate,
+                        subscriptionEndDate: row.applicationlimitdate,
+                        divulgationDate: row.divulgationdate
+                    },
+                    collegeId: row.collegeid,
+                    active: row.active,
+                    status: row.status,
+                    deleted: row.deleted,
+                    createdBy: row.createdby
                 }
             }
         } catch (err) {

@@ -34,4 +34,40 @@ export default class ProcessDocumentDAL {
         }
     }
 
+    public static async getDocumentsByProcessId(processId: number, client?: PoolClient): Promise<ProcessDocument[]> {
+        let response: ProcessDocument[] = [];
+        let result: QueryResult<any> | undefined;
+
+        try {
+            const query: string = 'SELECT * FROM processDocument WHERE processId = $1';
+            const values: any[] = [processId];
+
+            if (client === undefined) result = await db.query(query, values);
+            else result = await client.query(query, values);
+
+            if (result.rowCount > 0) {
+                result.rows.forEach((row: any) => {
+                    response.push({
+                        id: row.id,
+                        processId: processId,
+                        name: row.name,
+                        description: row.description,
+                        stage: row.stage,
+                        modality: row.modality,
+                        vacancyType: row.vacancytype,
+                        accountingType: row.accountingtype,
+                        accountingValue: row.accountingvalue,
+                        evaluated: row.evaluated,
+                        allowMultipleSubmissions: row.allowmultiplesubmissions,
+                        deleted: row.deleted
+                    });
+                });
+            }
+        } catch (err) {
+            throw err;
+        }
+
+        return response;
+    }
+
 }
