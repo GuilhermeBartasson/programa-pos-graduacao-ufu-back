@@ -4,7 +4,7 @@ import ProcessDocument from "../models/processDocument";
 
 export default class ProcessDocumentDAL {
 
-    public static async createProcessDocumentDAL(
+    public static async createProcessDocument(
         processId: number, document: ProcessDocument, client?: PoolClient
     ): Promise<QueryResult<any> | undefined> {
         let result: QueryResult<any> | undefined;

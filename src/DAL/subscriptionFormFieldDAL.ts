@@ -120,7 +120,7 @@ export default class SubscriptionFormFieldDAL {
         return response;
     }
 
-    public static async deleteSubscriptionFormFieldByProcessId(processId: number, client?: PoolClient): Promise<void> {
+    public static async deleteSubscriptionFormFieldsByProcessId(processId: number, client?: PoolClient): Promise<void> {
         try {
             const formFields: SubscriptionFormField[] = await this.getSubscriptionFormFieldsByProcessId(processId, true);
 

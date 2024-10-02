@@ -110,16 +110,34 @@ export default class selectiveProcessDAL {
         return selectiveProcess
     }
 
-    public static async deleteSelectiveProcessById(processId: number, client?: PoolClient) {
+    public static async deleteSelectiveProcessById(processId: number, client?: PoolClient): Promise<void> {
         try {
             const query: string = 'DELETE FROM selectiveProcesses WHERE id = $1';
             const values: any[] = [processId];
 
-            if (client === undefined) db.query(query, values);
-            else client.query(query, values);
+            if (client === undefined) await db.query(query, values);
+            else await client.query(query, values);
         } catch (err) {
             throw err;
         }
+    }
+
+    public static async saveSelectiveProcessCover(selectiveProcess: SelectiveProcess, client?: PoolClient): Promise<QueryResult<any> | undefined> {
+        let result: QueryResult<any> | undefined;
+        const { id, name, collegeId } = selectiveProcess;
+        const { startDate, endDate, homologationDate, subscriptionEndDate, divulgationDate } = selectiveProcess.dates;
+
+        try {
+            const query = "UPDATE selectiveProcesses SET name = $1, colelgeId = $2, startDate = $3, endDate = $4, homologationDate = $5, applicationLimitDate = $6, divulgationDate = $7 WHERE id = $8";
+            const values: any = [name, collegeId, startDate, endDate, homologationDate, subscriptionEndDate, divulgationDate, id];
+
+            if (client !== undefined) result = await client.query(query, values);
+            else result = await db.query(query, values);
+        } catch (err) {
+            throw err;
+        }
+
+        return result;
     }
 
 }

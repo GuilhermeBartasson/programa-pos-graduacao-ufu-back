@@ -19,9 +19,9 @@ const createSelectiveProcess = async (req: Request, res: Response, next: NextFun
     const client = await db.getDbClient();
     let createProcessResult: QueryResult<any> | undefined;
 
-    await client.query('BEGIN');
-
     try {
+        await client.query('BEGIN');
+
         createProcessResult = await SelectiveProcessDAL.createSelectiveProcess(sp.name, sp.collegeId, sp.createdBy, sp.dates, client);
 
         const processId = createProcessResult?.rows[0].id;
@@ -44,14 +44,14 @@ const createSelectiveProcess = async (req: Request, res: Response, next: NextFun
         // Saving documents related to personal information
         if (sp.personalDocuments !== undefined) {
             sp.personalDocuments.forEach(async (document: ProcessDocument) => {
-                await ProcessDocumentDAL.createProcessDocumentDAL(processId, document, client);
+                await ProcessDocumentDAL.createProcessDocument(processId, document, client);
             });
         }
 
         // Saving document related to evaluation
         if (sp.evaluatedDocuments !== undefined) {
             sp.evaluatedDocuments.forEach(async (document: ProcessDocument) => {
-                await ProcessDocumentDAL.createProcessDocumentDAL(processId, document, client);
+                await ProcessDocumentDAL.createProcessDocument(processId, document, client);
             });
         }
 
@@ -131,7 +131,7 @@ const deleteSelectiveProcess = async(req: Request, res: Response, next: NextFunc
 
     try {
         await ProcessDocumentDAL.deleteDocumentsByProcessId(parseInt(id as string), client);
-        await SubscriptionFormFieldDAL.deleteSubscriptionFormFieldByProcessId(parseInt(id as string), client);
+        await SubscriptionFormFieldDAL.deleteSubscriptionFormFieldsByProcessId(parseInt(id as string), client);
         await VacancyDAL.deleteVacanciesByProcessId(parseInt(id as string), client);
         await SelectiveProcessDAL.deleteSelectiveProcessById(parseInt(id as string), client);
 
@@ -147,4 +147,50 @@ const deleteSelectiveProcess = async(req: Request, res: Response, next: NextFunc
     return res.status(200).send('Processo seletivo deletado');
 }
 
-export default { createSelectiveProcess, getSelectiveProcessesCover, getSelectiveProcessFullInformation, deleteSelectiveProcess };
+const updateSelectiveProcess = async(req: Request, res: Response, next: NextFunction) => {
+    const { selectiveProcess } = req.body;
+
+    const sp: SelectiveProcess = selectiveProcess;
+    const client = await db.getDbClient();
+    
+    try {
+        await client.query('BEGIN');
+
+        await SelectiveProcessDAL.saveSelectiveProcessCover(sp, client).then(result => {
+            if (result === undefined || result.rows.length === 0) throw 'Processo seletivo não encontrado';
+        }).catch(err => {
+            throw err;
+        });
+
+        // Updating Vacacny Data
+        await VacancyDAL.deleteVacanciesByProcessId(sp.id, client);
+        sp.vacancies?.forEach(async (vacancy: Vacancy) => await VacancyDAL.createVacancy(vacancy, client));
+
+        // Updating Subscription Form Data
+        await SubscriptionFormFieldDAL.deleteSubscriptionFormFieldsByProcessId(sp.id, client);
+        sp.subscriptionForm?.forEach(async (formField: SubscriptionFormField) => {
+            await SubscriptionFormFieldDAL.createSubscriptionFormField(sp.id, formField, client);
+        });
+
+        // Updating Documents Data
+        await ProcessDocumentDAL.deleteDocumentsByProcessId(sp.id, client);
+        sp.personalDocuments?.forEach(async (document: ProcessDocument) => {
+            await ProcessDocumentDAL.createProcessDocument(sp.id, document, client);
+        });
+        sp.evaluatedDocuments?.forEach(async (document: ProcessDocument) => {
+            await ProcessDocumentDAL.createProcessDocument(sp.id, document, client);
+        })
+
+        await client.query('COMMIT');
+    } catch (err) {
+        console.error(err);
+        await client.query('ROLLBACK');
+        return res.status(500).send('Houve um erro ao salvar esse processo seletivo');
+    } finally {
+        client.release();
+    }
+
+    return res.status(200).send('Processo seletivo salvo com sucesso');
+}
+
+export default { createSelectiveProcess, getSelectiveProcessesCover, getSelectiveProcessFullInformation, deleteSelectiveProcess, updateSelectiveProcess };
