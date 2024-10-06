@@ -152,19 +152,22 @@ const updateSelectiveProcess = async(req: Request, res: Response, next: NextFunc
 
     const sp: SelectiveProcess = selectiveProcess;
     const client = await db.getDbClient();
-    
+
     try {
         await client.query('BEGIN');
 
         await SelectiveProcessDAL.saveSelectiveProcessCover(sp, client).then(result => {
-            if (result === undefined || result.rows.length === 0) throw 'Processo seletivo não encontrado';
+            if (result === undefined || result.rowCount === 0) throw 'Processo seletivo não encontrado';
         }).catch(err => {
             throw err;
         });
 
         // Updating Vacacny Data
         await VacancyDAL.deleteVacanciesByProcessId(sp.id, client);
-        sp.vacancies?.forEach(async (vacancy: Vacancy) => await VacancyDAL.createVacancy(vacancy, client));
+        sp.vacancies?.forEach(async (vacancy: Vacancy) => {
+            if (vacancy.selectiveProcessId === undefined) vacancy.selectiveProcessId = sp.id;
+            await VacancyDAL.createVacancy(vacancy, client)
+        });
 
         // Updating Subscription Form Data
         await SubscriptionFormFieldDAL.deleteSubscriptionFormFieldsByProcessId(sp.id, client);

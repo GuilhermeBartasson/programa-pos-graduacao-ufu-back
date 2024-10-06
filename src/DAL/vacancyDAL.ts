@@ -6,11 +6,22 @@ export default class VacancyDAL {
 
     public static async createVacancy(vacancy: Vacancy, client?: PoolClient): Promise<QueryResult<any> | undefined> {
         let result: QueryResult<any> | undefined;
+        let { 
+            selectiveProcessId, 
+            researchLineId, 
+            broadCompetition, 
+            ppi, 
+            pcd, 
+            humanitaryPolitics, 
+            modality, 
+            targetPublic, 
+            period 
+        } = vacancy
 
         try {
             const query: string =   "INSERT INTO vacancy (selectiveProcessId, researchLineId, broadCompetition, ppi, pcd, humanitaryPolitics, modality, targetPublic, timePeriod, deleted) " +
                                     "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, false)"
-            const values: any[] = [vacancy.selectiveProcessId, vacancy.researchLineId, vacancy.broadCompetition, vacancy.ppi, vacancy.pcd, vacancy.humanitaryPolitics, vacancy.modality, vacancy.targetPublic, vacancy.period];
+            const values: any[] = [selectiveProcessId, researchLineId, broadCompetition, ppi, pcd, humanitaryPolitics, modality, targetPublic, period];
 
             if (client === undefined) result = await db.query(query, values);
             else result = await client.query(query, values)

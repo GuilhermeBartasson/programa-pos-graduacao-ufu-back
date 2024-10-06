@@ -10,11 +10,12 @@ export default class SubscriptionFormFieldDAL {
         processId: number, formField: SubscriptionFormField, client?: PoolClient
     ): Promise<QueryResult<any> | undefined> {
         let result: QueryResult<any> | undefined;
+        let { name, description, stage, dataType, position } = formField;
 
         try {
             const query: string =   "INSERT INTO subscriptionFormFields (selectiveProcessId, name, description, formPosition, stage, dataType, deleted) " +
-                                    "VALUES ($1, $2, $3, $4, $5, $6, false)"
-            const values: any[] = [processId, formField.name, formField.description, formField.stage, formField.dataType];
+                                    "VALUES ($1, $2, $3, $4, $5, $6, false) RETURNING id"
+            const values: any[] = [processId, name, description, position, stage, dataType];
 
             if (client === undefined) result = await db.query(query, values);
             else result = await client.query(query, values);
@@ -39,7 +40,7 @@ export default class SubscriptionFormFieldDAL {
         let result: QueryResult<any> | undefined;
 
         try {
-            const query: string =   "INSERT INTO subscriptionFormFieldOptions (subscriptionFormFieldId, optionName, deleted)" +
+            const query: string =   "INSERT INTO subscriptionFormFieldOptions (subscriptionFormFieldId, optionName, deleted) " +
                                     "VALUES ($1, $2, false)";
             const values: any[] = [subscriptionFormFieldId, option.option];
 
