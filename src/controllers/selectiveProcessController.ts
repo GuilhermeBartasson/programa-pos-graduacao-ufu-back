@@ -21,7 +21,6 @@ const createSelectiveProcess = async (req: Request, res: Response, next: NextFun
 
     try {
         await client.query('BEGIN');
-
         createProcessResult = await SelectiveProcessDAL.createSelectiveProcess(sp.name, sp.collegeId, sp.createdBy, sp.dates, client);
 
         const processId = createProcessResult?.rows[0].id;
