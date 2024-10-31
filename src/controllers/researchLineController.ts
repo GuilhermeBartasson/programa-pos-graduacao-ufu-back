@@ -72,4 +72,43 @@ const deleteResearchLine = async (req: Request, res: Response, next: NextFunctio
     return res.status(200).send('Linha de pesquisa deletada');
 }
 
-export default { createResearchLine, getResearchLines, updateResearchLine, deleteResearchLine };
+const getRearchLineById = async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.query
+
+    let response: ResearchLine | undefined;
+
+    try {
+        response = await ResearchLineDAL.getResearchLineById(parseInt(id as string));
+    } catch (err) {
+        console.error(err);
+
+        return res.status(500).send('Houve um erro ao buscar essa linha de pesquisa');
+    }
+
+    return res.status(200).send(response);
+}
+
+const getResearchLinesByIdList = async (req: Request, res: Response, next: NextFunction) => {
+    const { ids } = req.query
+
+    let response: ResearchLine[] = [];
+
+    try {
+        response = await ResearchLineDAL.getResearchLinesByIdList((ids as string).split(',').map(id => parseInt(id)));
+    } catch (err) {
+        console.log(err);
+
+        return res.status(500).send('Houve um erro ao buscar essas linhas de pesquisa');
+    }
+
+    return res.status(200).send(response);
+}
+
+export default { 
+    createResearchLine, 
+    getResearchLines, 
+    updateResearchLine, 
+    deleteResearchLine,
+    getRearchLineById,
+    getResearchLinesByIdList
+};

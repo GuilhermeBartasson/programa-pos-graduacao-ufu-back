@@ -119,4 +119,67 @@ export default class ResearchLineDAL {
         }
     }
 
+    public static async getResearchLineById(id: number): Promise<ResearchLine | undefined> {
+        let response: ResearchLine | undefined;
+        let result: QueryResult<any> | undefined;
+
+        try {
+            const query = 'SELECT * FROM researchLines WHERE id = $1';
+            const values = [id];
+
+            result = await db.query(query, values);
+
+            if (result.rowCount > 0) {
+                let { id, name, active, deleted, collegeid } = result.rows[0];
+
+                response = {
+                    id,
+                    name,
+                    collegeId: collegeid,
+                    active,
+                    deleted
+                };
+            }
+        } catch (err) {
+            throw err;
+        }
+
+        return response;
+    }
+
+    public static async getResearchLinesByIdList(ids: number[]): Promise<ResearchLine[]> {
+        let response: ResearchLine[] = [];
+        let result: QueryResult<any> | undefined;
+
+        try {
+            let query = 'SELECT * FROM researchLines WHERE id IN ('
+            const values = ids;
+
+            for (let x = 0; x < ids.length; x++) {
+                if (x < ids.length - 1) query += `$${x + 1}, `
+                else query += `$${x + 1})`
+            }
+
+            result = await db.query(query, values);
+
+            if (result.rowCount > 0) {
+                result.rows.forEach(researchLine => {
+                    let { id, name, active, deleted, collegeid } = researchLine;
+
+                    response.push({
+                        id,
+                        name,
+                        collegeId: collegeid,
+                        active,
+                        deleted
+                    });
+                });
+            }
+        } catch (err) {
+            throw err;
+        }
+
+        return response;
+    }
+
 }
