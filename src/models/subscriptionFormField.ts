@@ -12,4 +12,5 @@ export default interface SubscriptionFormField {
     position: number;
     stage: Stages;
     deleted: boolean;
+    required: boolean;
 }
