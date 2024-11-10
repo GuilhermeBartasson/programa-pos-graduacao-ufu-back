@@ -16,4 +16,5 @@ export default interface ProcessDocument {
     evaluated: boolean;
     allowMultipleSubmissions: boolean;
     deleted: boolean;
+    required: boolean;
 }

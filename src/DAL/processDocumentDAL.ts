@@ -8,11 +8,11 @@ export default class ProcessDocumentDAL {
         processId: number, document: ProcessDocument, client?: PoolClient
     ): Promise<QueryResult<any> | undefined> {
         let result: QueryResult<any> | undefined;
-        let { name, description, stage, modality, vacancyType, accountingType, accountingValue, evaluated, allowMultipleSubmissions} = document;
+        let { name, description, stage, modality, vacancyType, accountingType, accountingValue, evaluated, allowMultipleSubmissions, required } = document;
 
         try {
-            const query: string = "INSERT INTO processDocument (processId, name, description, stage, modality, vacancyType, accountingType, accountingValue, evaluated, allowMultipleSubmissions) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)";
-            const values: any[] = [processId, name, description, stage, modality, vacancyType, accountingType, accountingValue, evaluated, allowMultipleSubmissions];
+            const query: string = "INSERT INTO processDocument (processId, name, description, stage, modality, vacancyType, accountingType, accountingValue, evaluated, allowMultipleSubmissions, required) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)";
+            const values: any[] = [processId, name, description, stage, modality, vacancyType, accountingType, accountingValue, evaluated, allowMultipleSubmissions, required];
 
             if (client === undefined) result = await db.query(query, values);
             else result = await client.query(query, values);
@@ -60,7 +60,8 @@ export default class ProcessDocumentDAL {
                         accountingValue: row.accountingvalue,
                         evaluated: row.evaluated,
                         allowMultipleSubmissions: row.allowmultiplesubmissions,
-                        deleted: row.deleted
+                        deleted: row.deleted,
+                        required: row.required
                     });
                 });
             }
