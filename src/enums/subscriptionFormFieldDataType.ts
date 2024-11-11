@@ -3,6 +3,7 @@ enum SubscriptionFormFieldDataType {
     number = 'number',
     select = 'select',
     checkbox = 'checkbox',
+    date = 'date',
     blank = ''
 }
   
