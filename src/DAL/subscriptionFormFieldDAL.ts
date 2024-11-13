@@ -67,7 +67,7 @@ export default class SubscriptionFormFieldDAL {
         try {
             const query: string =   "INSERT INTO subscriptionFormFieldDateOptions (subscriptionFormFieldId, max, maxEnabled, min, minEnabled) " +
                                     "VALUES ($1, $2, $3, $4, $5)";
-            const values: any[] = [subscriptionFormFieldId, max, maxEnabled, min, minEnabled];
+            const values: any[] = [subscriptionFormFieldId, max === '' ? null : max, maxEnabled, min === '' ? null : min, minEnabled];
 
             if (client === undefined) result = await db.query(query, values);
             else result = await client.query(query, values);
@@ -91,7 +91,7 @@ export default class SubscriptionFormFieldDAL {
             result = await db.query(query, values);
 
             if (result.rowCount > 0) {
-                result.rows.forEach(async (row: any) => {
+                for (const row of result.rows) {
                     let subscriptionFormField: SubscriptionFormField = {
                         id: row.id,
                         selectiveProcessId: row.selectiveprocessid,
@@ -113,7 +113,7 @@ export default class SubscriptionFormFieldDAL {
                     }
 
                     response.push(subscriptionFormField);
-                });
+                };
             }
         } catch (err) {
             throw err;
