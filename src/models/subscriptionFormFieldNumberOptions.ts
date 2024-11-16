@@ -1,6 +1,6 @@
-export default interface SubscriptionFormFieldNumbeOptions {
-    max?: string;
-    maxEnabled: boolean;
-    min?: string;
-    minEnabled: boolean;
-  }
+export default interface SubscriptionFormFieldNumberOptions {
+  max?: number;
+  maxEnabled: boolean;
+  min?: number;
+  minEnabled: boolean;
+}

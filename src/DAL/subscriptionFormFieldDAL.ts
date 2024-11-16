@@ -92,7 +92,7 @@ export default class SubscriptionFormFieldDAL {
         try {
             const query: string =   'INSERT INTO subscriptionFormFieldNumberOptions (subscriptionFormFieldId, max, maxEnables, min, minEnabled) ' +
                                     'VALUES ($1, $2, $3, $4, $5)';
-                                    const values: any[] = [subscriptionFormFieldId, max === '' ? null : max, maxEnabled, min === '' ? null : min, minEnabled];
+                                    const values: any[] = [subscriptionFormFieldId, max, maxEnabled, min, minEnabled];
 
             if (client === undefined) result = await db.query(query, values);
             else result = await client.query(query, values);

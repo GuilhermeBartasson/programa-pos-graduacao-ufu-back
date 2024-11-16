@@ -1,7 +1,7 @@
 import Stages from "../enums/stages";
 import SubscriptionFormFieldDataType from "../enums/subscriptionFormFieldDataType";
 import SubscriptionFormFieldDateOptions from "./subscriptionFormFieldDateOptions";
-import SubscriptionFormFieldNumbeOptions from "./subscriptionFormFieldNumberOptions";
+import SubscriptionFormFieldNumberOptions from "./subscriptionFormFieldNumberOptions";
 import SubscriptionFormFieldOption from "./subscriptionFormFieldOption";
 
 export default interface SubscriptionFormField {
@@ -12,7 +12,7 @@ export default interface SubscriptionFormField {
     dataType: SubscriptionFormFieldDataType;
     options?: SubscriptionFormFieldOption[];
     dateOptions?: SubscriptionFormFieldDateOptions;
-    numberOptions?: SubscriptionFormFieldNumbeOptions
+    numberOptions?: SubscriptionFormFieldNumberOptions
     position: number;
     stage: Stages;
     deleted: boolean;
