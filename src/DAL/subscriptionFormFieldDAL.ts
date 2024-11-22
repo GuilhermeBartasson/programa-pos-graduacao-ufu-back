@@ -25,9 +25,9 @@ export default class SubscriptionFormFieldDAL {
             let formFieldId = result.rows[0].id;
 
             if (formField.options !== undefined) {
-                formField.options.forEach(async (option) => {
+                for (let option of formField.options) {
                     await this.createSubscriptionFormFieldOption(formFieldId, option, client);
-                });
+                }
             }
 
             if (formField.dateOptions !== undefined) {
@@ -90,7 +90,7 @@ export default class SubscriptionFormFieldDAL {
         const { max, maxEnabled, min, minEnabled } = numberOptions;
 
         try {
-            const query: string =   'INSERT INTO subscriptionFormFieldNumberOptions (subscriptionFormFieldId, max, maxEnables, min, minEnabled) ' +
+            const query: string =   'INSERT INTO subscriptionFormFieldNumberOptions (subscriptionFormFieldId, max, maxEnabled, min, minEnabled) ' +
                                     'VALUES ($1, $2, $3, $4, $5)';
                                     const values: any[] = [subscriptionFormFieldId, max, maxEnabled, min, minEnabled];
 

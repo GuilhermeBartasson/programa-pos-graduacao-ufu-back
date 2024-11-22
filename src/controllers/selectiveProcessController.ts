@@ -27,31 +27,31 @@ const createSelectiveProcess = async (req: Request, res: Response, next: NextFun
 
         // Saving vacancy data
         if (sp.vacancies !== undefined) {
-            sp.vacancies.forEach(async (vacancy: Vacancy) => {
+            for (let vacancy of sp.vacancies) {
                 vacancy.selectiveProcessId = processId;
-                VacancyDAL.createVacancy(vacancy, client);
-            });
+                await VacancyDAL.createVacancy(vacancy, client);
+            }
         }
 
         // Saving form fields
         if (sp.subscriptionForm !== undefined) {
-            sp.subscriptionForm.forEach(async (formField: SubscriptionFormField) => {
+            for (let formField of sp.subscriptionForm) {
                 await SubscriptionFormFieldDAL.createSubscriptionFormField(processId, formField, client);
-            });
+            }
         }
 
         // Saving documents related to personal information
         if (sp.personalDocuments !== undefined) {
-            sp.personalDocuments.forEach(async (document: ProcessDocument) => {
+            for (let document of sp.personalDocuments) {
                 await ProcessDocumentDAL.createProcessDocument(processId, document, client);
-            });
+            }
         }
 
         // Saving document related to evaluation
         if (sp.evaluatedDocuments !== undefined) {
-            sp.evaluatedDocuments.forEach(async (document: ProcessDocument) => {
+            for (let document of sp.evaluatedDocuments) {
                 await ProcessDocumentDAL.createProcessDocument(processId, document, client);
-            });
+            }
         }
 
         await client.query('COMMIT');
@@ -163,25 +163,33 @@ const updateSelectiveProcess = async(req: Request, res: Response, next: NextFunc
 
         // Updating Vacacny Data
         await VacancyDAL.deleteVacanciesByProcessId(sp.id, client);
-        sp.vacancies?.forEach(async (vacancy: Vacancy) => {
-            if (vacancy.selectiveProcessId === undefined) vacancy.selectiveProcessId = sp.id;
-            await VacancyDAL.createVacancy(vacancy, client)
-        });
+        if (sp.vacancies !== undefined) {
+            for (let vacancy of sp.vacancies) {
+                if (vacancy.selectiveProcessId === undefined) vacancy.selectiveProcessId = sp.id;
+                await VacancyDAL.createVacancy(vacancy, client)
+            }
+        }
 
         // Updating Subscription Form Data
         await SubscriptionFormFieldDAL.deleteSubscriptionFormFieldsByProcessId(sp.id, client);
-        sp.subscriptionForm?.forEach(async (formField: SubscriptionFormField) => {
-            await SubscriptionFormFieldDAL.createSubscriptionFormField(sp.id, formField, client);
-        });
+        if (sp.subscriptionForm !== undefined) {
+            for (let formField of sp.subscriptionForm) {
+                await SubscriptionFormFieldDAL.createSubscriptionFormField(sp.id, formField, client);
+            }
+        }
 
         // Updating Documents Data
         await ProcessDocumentDAL.deleteDocumentsByProcessId(sp.id, client);
-        sp.personalDocuments?.forEach(async (document: ProcessDocument) => {
-            await ProcessDocumentDAL.createProcessDocument(sp.id, document, client);
-        });
-        sp.evaluatedDocuments?.forEach(async (document: ProcessDocument) => {
-            await ProcessDocumentDAL.createProcessDocument(sp.id, document, client);
-        })
+        if (sp.personalDocuments !== undefined) {
+            for (let document of sp.personalDocuments) {
+                await ProcessDocumentDAL.createProcessDocument(sp.id, document, client);
+            }
+        }
+        if (sp.evaluatedDocuments !== undefined) {
+            for (let document of sp.evaluatedDocuments) {
+                await ProcessDocumentDAL.createProcessDocument(sp.id, document, client);
+            }
+        }
 
         await client.query('COMMIT');
     } catch (err) {
