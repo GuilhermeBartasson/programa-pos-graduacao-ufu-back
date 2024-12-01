@@ -47,7 +47,7 @@ const createSelectiveProcess = async (req: Request, res: Response, next: NextFun
             }
         }
 
-        // Saving document related to evaluation
+        // Saving documents related to evaluation
         if (sp.evaluatedDocuments !== undefined) {
             for (let document of sp.evaluatedDocuments) {
                 await ProcessDocumentDAL.createProcessDocument(processId, document, client);

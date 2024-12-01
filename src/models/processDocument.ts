@@ -15,6 +15,8 @@ export default interface ProcessDocument {
     accountingValue: number;
     evaluated: boolean;
     allowMultipleSubmissions: boolean;
+    maxEvaluation: number;
+    maxEvaluationEnabled: boolean;
     deleted: boolean;
     required: boolean;
 }
