@@ -9,7 +9,7 @@ export default class ProcessDocumentDAL {
     ): Promise<QueryResult<any> | undefined> {
         let result: QueryResult<any> | undefined;
         let { name, description, stage, modality, vacancyType, accountingType, accountingValue, evaluated, allowMultipleSubmissions, maxEvaluation, maxEvaluationEnabled, required } = document;
-        console.log(maxEvaluation);
+
         try {
             const query: string = 'INSERT INTO processDocument (processId, name, description, stage, modality, vacancyType, accountingType, accountingValue, evaluated, allowMultipleSubmissions, "maxEvaluation", "maxEvaluationEnabled", required) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)';
             const values: any[] = [processId, name, description, stage, modality, vacancyType, accountingType, accountingValue, evaluated, allowMultipleSubmissions, maxEvaluation, maxEvaluationEnabled, required];
@@ -48,7 +48,7 @@ export default class ProcessDocumentDAL {
             
             if (result.rowCount > 0) {
                 result.rows.forEach((row: any) => {
-                    console.log(row)
+
                     response.push({
                         id: row.id,
                         processId: processId,
@@ -71,7 +71,7 @@ export default class ProcessDocumentDAL {
         } catch (err) {
             throw err;
         }
-        console.log(JSON.stringify(response));
+
         return response;
     }
 

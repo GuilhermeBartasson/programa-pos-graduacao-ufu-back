@@ -96,7 +96,7 @@ const getResearchLinesByIdList = async (req: Request, res: Response, next: NextF
     try {
         response = await ResearchLineDAL.getResearchLinesByIdList((ids as string).split(',').map(id => parseInt(id)));
     } catch (err) {
-        console.log(err);
+        console.error(err);
 
         return res.status(500).send('Houve um erro ao buscar essas linhas de pesquisa');
     }
