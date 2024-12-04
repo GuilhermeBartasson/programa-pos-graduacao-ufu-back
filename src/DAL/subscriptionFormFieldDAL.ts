@@ -5,9 +5,11 @@ import SubscriptionFormFieldDataType from '../enums/subscriptionFormFieldDataTyp
 import SubscriptionFormFieldOption from '../models/subscriptionFormFieldOption';
 import SubscriptionFormFieldDateOptions from '../models/subscriptionFormFieldDateOptions';
 import SubscriptionFormFieldNumbeOptions from '../models/subscriptionFormFieldNumberOptions';
+import SubscriptionFormFieldAnswer from '../models/subscriptionFormFieldAnswer';
 
 export default class SubscriptionFormFieldDAL {
 
+    //#region Create
     public static async createSubscriptionFormField(
         processId: number, formField: SubscriptionFormField, client?: PoolClient
     ): Promise<QueryResult<any> | undefined> {
@@ -92,7 +94,7 @@ export default class SubscriptionFormFieldDAL {
         try {
             const query: string =   'INSERT INTO subscriptionFormFieldNumberOptions (subscriptionFormFieldId, max, maxEnabled, min, minEnabled) ' +
                                     'VALUES ($1, $2, $3, $4, $5)';
-                                    const values: any[] = [subscriptionFormFieldId, max, maxEnabled, min, minEnabled];
+            const values: any[] = [subscriptionFormFieldId, max, maxEnabled, min, minEnabled];
 
             if (client === undefined) result = await db.query(query, values);
             else result = await client.query(query, values);
@@ -103,6 +105,28 @@ export default class SubscriptionFormFieldDAL {
         return result;
     }
 
+    public static async createFormFieldAnswer(
+        subscriptionId: number, formFieldAnswer: SubscriptionFormFieldAnswer, client?: PoolClient
+    ): Promise<QueryResult<any> | undefined> {
+        let result: QueryResult<any> | undefined;
+        const { id, selectiveProcessId } = formFieldAnswer.formField!
+
+        try {
+            const query: string =   'INSERT INTO subscriptionFormFieldAnswers (processId, subscriptionFormFieldId, subscriptionId, answer, creationDate) ' +
+                                    'VALUES ($1, $2, $3, $4, (Now())::timestamp)';
+            const values: any[] = [selectiveProcessId, id, subscriptionId, formFieldAnswer.answer];
+
+            if (client === undefined) result = await db.query(query, values)
+            else result = await client.query(query, values);
+        } catch (err) {
+            throw err;
+        }
+
+        return result;
+    }
+    //#endregion Create
+
+    //#region Get
     public static async getSubscriptionFormFieldsByProcessId(processId: number, showDeleted: boolean = false): Promise<SubscriptionFormField[]> {
         let response: SubscriptionFormField[] = [];
         let result: QueryResult<any> | undefined;
@@ -117,30 +141,7 @@ export default class SubscriptionFormFieldDAL {
 
             if (result.rowCount > 0) {
                 for (const row of result.rows) {
-                    let subscriptionFormField: SubscriptionFormField = {
-                        id: row.id,
-                        selectiveProcessId: row.selectiveprocessid,
-                        name: row.name,
-                        description: row.description,
-                        position: row.formposition,
-                        stage: row.stage,
-                        deleted: row.deleted,
-                        dataType: row.datatype,
-                        required: row.required
-                    }
-
-                    if ([SubscriptionFormFieldDataType.checkbox, SubscriptionFormFieldDataType.select].includes(row.datatype)) {
-                        subscriptionFormField.options = await this.getSubscriptionFormFieldOptionsByFormFieldId(row.id);
-                    }
-
-                    if ([SubscriptionFormFieldDataType.date].includes(row.datatype)) {
-                        subscriptionFormField.dateOptions = await this.getSubscriptionFormFieldDateOptionsByFormFieldId(row.id);
-                    }
-
-                    if ([SubscriptionFormFieldDataType.number].includes(row.datatype)) {
-                        subscriptionFormField.numberOptions = await this.getSubscriptionFormFieldNumberOptionsByFormFieldId(row.id);
-                    }
-
+                    let subscriptionFormField = await this.assembleSubscriptionFormField(row);
                     response.push(subscriptionFormField);
                 };
             }
@@ -149,6 +150,56 @@ export default class SubscriptionFormFieldDAL {
         }
 
         return response;
+    }
+
+    public static async getSubscriptionFormFieldById(id: number, showDeleted: boolean = false): Promise<SubscriptionFormField | undefined> {
+        let response: SubscriptionFormField | undefined;
+        let result: QueryResult<any> | undefined;
+
+        try {
+            let query: string = "SELECT * FROM subscriptionFormFields WHERE id = $1";
+            const values: any[] = [id];
+
+            if (!showDeleted) query += " AND deleted = false";
+
+            result = await db.query(query, values);
+
+            if (result.rowCount > 0) {
+                response = await this.assembleSubscriptionFormField(result.rows[0]);
+            }
+        } catch (err) {
+            throw err;
+        }
+
+        return response;
+    }
+
+    private static async assembleSubscriptionFormField(row: any): Promise<SubscriptionFormField> {
+        let subscriptionFormField: SubscriptionFormField = {
+            id: row.id,
+            selectiveProcessId: row.selectiveprocessid,
+            name: row.name,
+            description: row.description,
+            position: row.formposition,
+            stage: row.stage,
+            deleted: row.deleted,
+            dataType: row.datatype,
+            required: row.required
+        }
+
+        if ([SubscriptionFormFieldDataType.checkbox, SubscriptionFormFieldDataType.select].includes(row.datatype)) {
+            subscriptionFormField.options = await this.getSubscriptionFormFieldOptionsByFormFieldId(row.id);
+        }
+
+        if ([SubscriptionFormFieldDataType.date].includes(row.datatype)) {
+            subscriptionFormField.dateOptions = await this.getSubscriptionFormFieldDateOptionsByFormFieldId(row.id);
+        }
+
+        if ([SubscriptionFormFieldDataType.number].includes(row.datatype)) {
+            subscriptionFormField.numberOptions = await this.getSubscriptionFormFieldNumberOptionsByFormFieldId(row.id);
+        }
+
+        return subscriptionFormField;
     }
 
     public static async getSubscriptionFormFieldOptionsByFormFieldId(formFieldId: number, showDeleted: boolean = false): Promise<SubscriptionFormFieldOption[]> {
@@ -230,6 +281,35 @@ export default class SubscriptionFormFieldDAL {
         return response;
     }
 
+    public static async getSubscriptionFormFieldAnswerBySubscriptionId(subscriptionId: number): Promise<SubscriptionFormFieldAnswer | undefined> {
+        let response: SubscriptionFormFieldAnswer | undefined;
+        let result: QueryResult<any> | undefined;
+
+        try {
+            const query: string = 'SELECT * FROM subscriptionFormFieldAnswers WHERE subscriptionId = $1';
+            const values: any[] = [subscriptionId];
+
+            result = await db.query(query, values);
+
+            if (result.rowCount > 0) {
+                let row = result.rows[0];
+
+                response = {
+                    id: row.id,
+                    answer: row.answer
+                }
+
+                response.formField = await this.getSubscriptionFormFieldById(row.subscriptionformfieldid);
+            }
+        } catch (err) {
+            throw err;
+        }
+
+         return response;
+    }
+    //#endregion Get
+
+    //#region Delete
     public static async deleteSubscriptionFormFieldsByProcessId(processId: number, client?: PoolClient): Promise<void> {
         try {
             const formFields: SubscriptionFormField[] = await this.getSubscriptionFormFieldsByProcessId(processId, true);
@@ -291,5 +371,18 @@ export default class SubscriptionFormFieldDAL {
             }
         }
     }
+
+    public static async deleteSubscriptionFormFieldAnswersBySubscriptionId(subscriptionId: number, client?: PoolClient): Promise<void> {
+        try {
+            const query: string = 'DELETE FROM subscriptionFormFieldAnswers WHERE subscriptionId = $1';
+            const values: any[] = [subscriptionId];
+
+            if (client === undefined) db.query(query, values);
+            else client.query(query, values);
+        } catch (err) {
+            throw err;
+        }
+    }
+    //#endregion Delete
 
 }
