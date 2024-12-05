@@ -8,5 +8,8 @@
         "service": "gmail",
         "port": 587,
         "user": "guilhermebnj@gmail.com"
+    },
+    "files": {
+        "basePath": "D:/Desktop/Work/Arquivos UFU/TCC/Terceiro Tema/Documentos/"
     }
 }

@@ -1,3 +1,4 @@
+import { QueryResult } from 'pg';
 import db from '../config/database';
 import College from '../models/college';
 
@@ -14,28 +15,54 @@ export default class CollegeDAL {
     }
 
     public static async getColleges(showDeleted: boolean = false): Promise<College[]> {
-        let colleges: College[] = [];
-        let c: any[] = [];
+        let response: College[] = [];
+        let result: QueryResult<any> | undefined;
 
         try {
-            let query = 'SELECT * FROM colleges';
+            let query: string = 'SELECT * FROM colleges';
 
             if (!showDeleted) query += ' WHERE deleted = false';
 
-            c = (await db.query(query, [])).rows;
+            result = await db.query(query, []);
+
+            if (result.rowCount > 0) {
+                result.rows.forEach((row: any) => {
+                    response.push({
+                        id: row.id,
+                        name: row.name,
+                        deleted: row.deleted
+                    });
+                });
+            }
         } catch (err) {
             throw err;
         }
 
-        for (let x in c) {
-            colleges.push({
-                id: c[x].id,
-                name: c[x].name,
-                deleted: c[x].deleted
-            });
+        return response;
+    }
+
+    public static async getCollegeByProcessId(processId: number): Promise<College | undefined> {
+        let response: College | undefined;
+        let result: QueryResult<any> | undefined;
+
+        try {
+            const query: string = 'SELECT c.* FROM colleges c INNER JOIN selectiveProcesses p ON p.collegeId = c.id WHERE p.id = $1';
+            const values: any[] = [processId];
+
+            result = await db.query(query, values);
+
+            if (result.rowCount > 0) {
+                response = {
+                    id: result.rows[0].id,
+                    name: result.rows[0].name,
+                    deleted: result.rows[0].deleted
+                }
+            }
+        } catch (err) {
+            throw err;
         }
 
-        return colleges;
+        return response;
     }
 
     public static async updateCollege(college: College): Promise<void> {

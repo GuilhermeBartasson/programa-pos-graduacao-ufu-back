@@ -6,6 +6,11 @@ import ProcessDocumentSubmission from "./processDocumentSubmission";
 import SubscriptionFormFieldAnswer from "./subscriptionFormFieldAnswer";
 
 export default interface SelectiveProcessSubscription {
+  applicantId: number;
+  apllicantEmail: string;
+  applicantName: string;
+  applicantMiddleName: string;
+  applicantLastName: string;
   vacancyType: VacancyType;
   modality: Modality;
   targetPublic: TargetPublic;
