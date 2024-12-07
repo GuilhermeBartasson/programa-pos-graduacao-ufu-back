@@ -2,6 +2,7 @@ import { PoolClient, QueryResult } from "pg";
 import db from '../config/database';
 import ProcessDocument from "../models/processDocument";
 import ProcessDocumentSubmission from "../models/processDocumentSubmission";
+import { EvaluatedDocumentSubmission, EvaluatedFileSubmission } from "../models/evaluatedDocumentSubmission";
 
 export default class ProcessDocumentDAL {
 
@@ -43,13 +44,39 @@ export default class ProcessDocumentDAL {
         return result;
     }
 
+    public static async createProcessDocumentEvaluatedSubmission(
+        processId: number, subscriptionId: number, evaluatedDocumentSubmission: EvaluatedDocumentSubmission, client?: PoolClient
+    ): Promise<QueryResult<any> | undefined> {
+        let result: QueryResult<any> | undefined;
+        const { id } = evaluatedDocumentSubmission.processDocument;
+
+        try {
+            const query: string =   'INSERT INTO processEvaluatedDocumentAnswers (processId, processDocumentId, subscriptionId, submittedFileNumber, submittedFileAllegedCount, submittedFileAllegedStartDate, submittedFileAllegedEndDate, creationDate) ' +
+                                    'VALUES($1, $2, $3, $4, $5, $6, $7, (Now())::timestamp)';
+
+            evaluatedDocumentSubmission.submitedFiles?.forEach(async (evaluatedSubmission: EvaluatedFileSubmission, index: number) => {
+                let fileNumber: number = index + 1;
+                let { accounting, startDate, endDate } = evaluatedSubmission
+
+                let values: any[] = [processId, id, subscriptionId, fileNumber, accounting, startDate, endDate];
+
+                if (client === undefined) result = await db.query(query, values);
+                else result = await client.query(query, values);
+            });
+        } catch (err) {
+            throw err;
+        }
+
+        return result;
+    }
+
     public static async deleteDocumentsByProcessId(processId: number, client?: PoolClient): Promise<void> {
         try {
             const query: string = 'DELETE FROM processDocument WHERE processId = $1';
             const values: any[] = [processId];
 
             if (client === undefined) await db.query(query, values);
-            else client.query(query, values);
+            else await client.query(query, values);
         } catch (err) {
             throw err;
         }
@@ -61,7 +88,19 @@ export default class ProcessDocumentDAL {
             const values: any[] = [subscriptionId];
 
             if (client === undefined) await db.query(query, values);
-            else client.query(query, values);
+            else await client.query(query, values);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    public static async deleteProcessDocumentEvaluatedSubmissionBySubscriptionId(subscriptionId: number, client?: PoolClient): Promise<void> {
+        try {
+            const query: string = 'DELETE FROM processEvaluatedDocumentAnswers WHERE subscriptionId = $1';
+            const values: any[] = [subscriptionId];
+
+            if (client === undefined) await db.query(query, values);
+            else await client.query(query, values);
         } catch (err) {
             throw err;
         }
@@ -80,23 +119,7 @@ export default class ProcessDocumentDAL {
             
             if (result.rowCount > 0) {
                 result.rows.forEach((row: any) => {
-                    response.push({
-                        id: row.id,
-                        processId: processId,
-                        name: row.name,
-                        description: row.description,
-                        stage: row.stage,
-                        modality: row.modality,
-                        vacancyType: row.vacancytype,
-                        accountingType: row.accountingtype,
-                        accountingValue: row.accountingvalue,
-                        evaluated: row.evaluated,
-                        allowMultipleSubmissions: row.allowmultiplesubmissions,
-                        maxEvaluation: row.maxEvaluation,
-                        maxEvaluationEnabled: row.maxEvaluationEnabled,
-                        deleted: row.deleted,
-                        required: row.required
-                    });
+                    response.push(this.assembleProcessDocumentObject(row));
                 });
             }
         } catch (err) {
@@ -106,27 +129,45 @@ export default class ProcessDocumentDAL {
         return response;
     }
 
-    public static async getprocessDocumentSubmissionBySubscriptionId(subscriptionId: number, client?: PoolClient): Promise<ProcessDocumentSubmission | undefined> {
-        let response: ProcessDocumentSubmission | undefined;
+    public static async getDocumentById(id: number, client?: PoolClient): Promise<ProcessDocument | undefined> {
+        let response: ProcessDocument | undefined;
         let result: QueryResult<any> | undefined;
 
         try {
-            const query: string = 'SELECT * FROM processDocumentAnswers WHERE subscriptionId = $1';
-            const values: any[] = [subscriptionId];
+            const query: string = 'SELECT * FROM processDocument WHERE id = $1';
+            const values: any[] = [id];
 
-            if (client == undefined) result = await db.query(query, values);
+            if (client === undefined) result = await db.query(query, values);
             else result = await client.query(query, values);
 
             if (result.rowCount > 0) {
-                let row: any = result.rows[0];
-
-                // TODO: Load file from path and assemble return object
+                response = this.assembleProcessDocumentObject(result.rows[0]);
             }
         } catch (err) {
             throw err;
         }
 
         return response;
+    }
+
+    private static assembleProcessDocumentObject(row: any) {
+        return {
+            id: row.id,
+            processId: row.processid,
+            name: row.name,
+            description: row.description,
+            stage: row.stage,
+            modality: row.modality,
+            vacancyType: row.vacancytype,
+            accountingType: row.accountingtype,
+            accountingValue: row.accountingvalue,
+            evaluated: row.evaluated,
+            allowMultipleSubmissions: row.allowmultiplesubmissions,
+            maxEvaluation: row.maxEvaluation,
+            maxEvaluationEnabled: row.maxEvaluationEnabled,
+            deleted: row.deleted,
+            required: row.required
+        }
     }
 
 }

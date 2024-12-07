@@ -12,4 +12,9 @@ interface EvaluatedDocumentSubmission {
   processDocument: ProcessDocument;
 }
 
-export { EvaluatedDocumentSubmission, EvaluatedFileSubmission }
+interface EvaluatedDocumentFilePathWrapper {
+  filePath: string;
+  index: number;
+}
+
+export { EvaluatedDocumentSubmission, EvaluatedFileSubmission, EvaluatedDocumentFilePathWrapper }
