@@ -34,6 +34,24 @@ export default class selectiveProcessDAL {
         return result;
     }
 
+    public static async createSelectiveProcessSubscription(
+        processId: number, userEmail: string, modality: string, vacancyType: string, targetPublic: string, researchLineId: number, client?: PoolClient
+    ): Promise<QueryResult<any> | undefined> {
+        let result: QueryResult<any> | undefined;
+
+        try {
+            const query: string = 'INSERT INTO selectiveProcessSubscriptions (processId, userEmail, modality, vacancyType, targetPublic, researchLineId) VALUES ($1, $2, $3, $4, $5, $6)';
+            const values: any[] = [processId, userEmail, modality, vacancyType, targetPublic, researchLineId];
+
+            if (client === undefined) result = await db.query(query, values);
+            else result = await client.query(query, values);
+        } catch (err) {
+            throw err;
+        }
+
+        return result;
+    }
+
     public static async getSelectiveProcessesCoverByCollegeId(collegeId: number, showDeleted: boolean = false): Promise<SelectiveProcess[]> {
         let result: QueryResult<any> | undefined;
         const selectiveProcesses: SelectiveProcess[] = [];
@@ -122,6 +140,18 @@ export default class selectiveProcessDAL {
         }
     }
 
+    public static async deleteSelectiveProcessSubscriptionById(subscriptionId: number, client?: PoolClient): Promise<void> {
+        try {
+            const query: string = 'DELETE FROM selectiveProcessSubscriptions WHERE id = $1';
+            const values: any[] = [subscriptionId];
+
+            if (client === undefined) await db.query(query, values);
+            else await client.query(query, values);
+        } catch (err) {
+            throw err;
+        }
+    }
+
     public static async saveSelectiveProcessCover(selectiveProcess: SelectiveProcess, client?: PoolClient): Promise<QueryResult<any> | undefined> {
         let result: QueryResult<any> | undefined;
         const { id, name, collegeId } = selectiveProcess;
@@ -131,8 +161,26 @@ export default class selectiveProcessDAL {
             const query = "UPDATE selectiveProcesses SET name = $1, collegeId = $2, startDate = $3, endDate = $4, homologationDate = $5, applicationLimitDate = $6, divulgationDate = $7 WHERE id = $8";
             const values: any = [name, collegeId, startDate, endDate, homologationDate, subscriptionEndDate, divulgationDate, id];
 
-            if (client !== undefined) result = await client.query(query, values);
-            else result = await db.query(query, values);
+            if (client === undefined) result = await db.query(query, values);
+            else result = await client.query(query, values);
+        } catch (err) {
+            throw err;
+        }
+
+        return result;
+    }
+
+    public static async updateSelectiveProcessSubscription(
+        subscriptionId: number, modality: string, vacancyType: string, targetPublic: string, researchLineId: number, client?: PoolClient
+    ): Promise<QueryResult<any> | undefined> {
+        let result: QueryResult<any> | undefined;
+
+        try {
+            const query: string = 'UPDATE selectiveProcessSubscriptions SET modality = $1, vacancyType = $2, targetPublic = $3, researchLineId = $4 WHERE id = $5';
+            const values: any[] = [modality, vacancyType, targetPublic, researchLineId, subscriptionId];
+
+            if (client === undefined) result = await db.query(query, values);
+            else result = await client.query(query, values);
         } catch (err) {
             throw err;
         }

@@ -4,13 +4,13 @@ import VacancyDAL from '../DAL/vacancyDAL';
 import SubscriptionFormFieldDAL from '../DAL/subscriptionFormFieldDAL';
 import SelectiveProcess from '../models/selectiveProcess';
 import db from '../config/database';
-import { QueryResult } from 'pg';
+import { PoolClient, QueryResult } from 'pg';
 import ProcessDocument from '../models/processDocument';
-import SubscriptionFormField from '../models/subscriptionFormField';
 import PaginationObject from '../models/paginationObject';
 import PaginationService from '../services/paginationService';
-import Vacancy from '../models/vacancy';
 import ProcessDocumentDAL from '../DAL/processDocumentDAL';
+import SelectiveProcessSubscription from '../models/selectiveProcessSubscription';
+import SubscriptionFormFieldAnswer from '../models/subscriptionFormFieldAnswer';
 
 const createSelectiveProcess = async (req: Request, res: Response, next: NextFunction) => {
     const { selectiveProcess } = req.body;
@@ -203,4 +203,67 @@ const updateSelectiveProcess = async(req: Request, res: Response, next: NextFunc
     return res.status(200).send('Processo seletivo salvo com sucesso');
 }
 
-export default { createSelectiveProcess, getSelectiveProcessesCover, getSelectiveProcessFullInformation, deleteSelectiveProcess, updateSelectiveProcess };
+const saveSubscriptionInformation = async(req: Request, res: Response, next: NextFunction) => {
+    const { selectiveProcessSubscription } = req.body;
+
+    const sub: SelectiveProcessSubscription = selectiveProcessSubscription;
+    const client: PoolClient = await db.getDbClient();
+
+    let createProcessResult: QueryResult<any> | undefined;
+
+    try {
+        await client.query('BEGIN');
+
+        if (sub.id === undefined) {
+            createProcessResult = await SelectiveProcessDAL.createSelectiveProcessSubscription(
+                sub.selectiveProcessId, 
+                sub.apllicantEmail, 
+                sub.modality, 
+                sub.vacancyType, 
+                sub.targetPublic, 
+                sub.researchLineId, 
+                client
+            );
+
+            sub.id = createProcessResult?.rows[0].id;
+        } else {
+            await SelectiveProcessDAL.updateSelectiveProcessSubscription(sub.id, sub.modality, sub.vacancyType, sub.targetPublic, sub.researchLineId, client);
+        }
+
+        if (sub.id === undefined) throw 'Não foi possível identificar o id da inscrição';
+        
+        await SubscriptionFormFieldDAL.deleteSubscriptionFormFieldAnswersBySubscriptionId(sub.id, client);
+
+        // Saving personal data
+        if (sub.personalDataForm !== undefined) {
+            for (let answer of sub.personalDataForm) {
+                await SubscriptionFormFieldDAL.createFormFieldAnswer(sub.id, answer, client);
+            }
+        }
+
+        // Saving academic data
+        if (sub.academicDataForm !== undefined) {
+            for (let answer of sub.academicDataForm) {
+                await SubscriptionFormFieldDAL.createFormFieldAnswer(sub.id, answer, client);
+            }
+        }
+
+    } catch (err) {
+        console.error(err);
+        await client.query('ROLLBACK');
+        return res.status(500).send('Houve um erro ao salvar a inscrição');
+    } finally {
+        client.release();
+    }
+
+    res.status(200).send('Inscrição salva com sucesso');
+}
+
+export default { 
+    createSelectiveProcess, 
+    getSelectiveProcessesCover, 
+    getSelectiveProcessFullInformation, 
+    deleteSelectiveProcess, 
+    updateSelectiveProcess, 
+    saveSubscriptionInformation 
+};
