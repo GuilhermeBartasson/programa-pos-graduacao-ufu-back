@@ -1,5 +1,6 @@
 import College from "../models/college";
 import * as fs from 'fs';
+import * as path from 'path';
 import config from '../config/default.json';
 import ProcessDocumentSubmission from "../models/processDocumentSubmission";
 import CollegeDAL from "../DAL/collegeDAL";
@@ -19,9 +20,10 @@ export default class ProcessDocumentFAL {
             const documentName: string = documentSubmission.processDocument.name;
             const extension: string | undefined = documentSubmission.submitedDocument?.name.split('.').pop();
             const filePath: string = `${config.files.basePath}${college?.name}/${processName}/Inscricoes/${applicantFullName}/Documentos/`;
-            if (!fs.existsSync(filePath)) fs.mkdirSync(filePath, { recursive: true });
 
             if (extension === undefined) throw 'Não foi possível identificar a extensão do arquivo';
+
+            if (!fs.existsSync(filePath)) fs.mkdirSync(filePath, { recursive: true });
 
             path = `${filePath}${documentName}.${extension}`;
             const arrayBuffer: ArrayBuffer = await documentSubmission.submitedDocument.arrayBuffer();
@@ -40,21 +42,26 @@ export default class ProcessDocumentFAL {
         processId: number, processName: string, applicantFullName: string, evaluatedDocumentSubmission: EvaluatedDocumentSubmission
     ): Promise<EvaluatedDocumentFilePathWrapper[]> {
         let documentPaths: EvaluatedDocumentFilePathWrapper[] = [];
+        let index: number = 0;
 
         try {
             if (evaluatedDocumentSubmission.submitedFiles === undefined) throw 'Nenhum documento foi fornecido';
             
-            evaluatedDocumentSubmission.submitedFiles.forEach((fileSubmission: EvaluatedFileSubmission, index: number) => {
-                if (fileSubmission.file === undefined) throw `Documento de número ${index + 1} fornecido para o documento ${evaluatedDocumentSubmission.processDocument.name} está indefinido!`;
-            });
+            for (const fileSubmission of evaluatedDocumentSubmission.submitedFiles) {
+                if (fileSubmission.file === undefined) {
+                    throw `Documento de número ${index + 1} fornecido para o documento ${evaluatedDocumentSubmission.processDocument.name} está indefinido!`;
+                }
+                index += 1;
+            }
 
             const college: College | undefined = await CollegeDAL.getCollegeByProcessId(processId);
             const documentName: string = evaluatedDocumentSubmission.processDocument.name;
-
             const filePath: string = `${config.files.basePath}${college?.name}/${processName}/Inscricoes/${applicantFullName}/Documentos Avaliativos/`;
+
             if (!fs.existsSync(filePath)) fs.mkdirSync(filePath, { recursive: true });
 
-            evaluatedDocumentSubmission.submitedFiles.forEach(async (submittedFile: EvaluatedFileSubmission, index: number) => {
+            index = 0;
+            for (const submittedFile of evaluatedDocumentSubmission.submitedFiles) {
                 const extension: string | undefined = submittedFile.file.name.split('.').pop();
 
                 if (extension === undefined) throw `${documentName} - não foi possível indentificar a extensão do arquivo de número ${index + 1}`;
@@ -67,7 +74,9 @@ export default class ProcessDocumentFAL {
                 fs.writeFileSync(path, buffer);
 
                 documentPaths.push({ filePath: path, index: index + 1 });
-            });
+
+                index += 1;
+            }
         } catch (err) {
             throw err;
         }
@@ -75,7 +84,7 @@ export default class ProcessDocumentFAL {
         return documentPaths;
     }
 
-    public static async getProcessDocumentSubmission(filePath: string): Promise<File | undefined> {
+    public static getProcessDocumentSubmission(filePath: string): File | undefined {
         let response: File | undefined;
 
         try {
@@ -92,6 +101,46 @@ export default class ProcessDocumentFAL {
         }
 
         return response;
+    }
+
+    public static deleteProcessDocumentSubmission(filePath: string): void {
+        try {
+            if (!fs.existsSync(filePath)) throw 'Documento não encontrado';
+
+            fs.rmSync(filePath);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    public static async deleteApplicantDocuments(processId: number, processName: string, applicantFullName: string): Promise<void> {
+        try {
+            const college: College | undefined = await CollegeDAL.getCollegeByProcessId(processId);
+            const documentsPath: string = `${config.files.basePath}${college?.name}/${processName}/Inscricoes/${applicantFullName}/Documentos/`;
+        
+            const files: string[] = fs.readdirSync(documentsPath);
+
+            for (const file of files) {
+                fs.unlinkSync(path.join(documentsPath, file));
+            }
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    public static async deleteApplicantEvaluatedDocuments(processId: number, processName: string, applicantFullName: string): Promise<void> {
+        try {
+            const college: College | undefined = await CollegeDAL.getCollegeByProcessId(processId);
+            const documentsPath: string = `${config.files.basePath}${college?.name}/${processName}/Inscricoes/${applicantFullName}/Documentos Avaliativos/`;
+        
+            const files: string[] = fs.readdirSync(documentsPath);
+
+            for (const file of files) {
+                fs.unlinkSync(path.join(documentsPath, file));
+            }
+        } catch (err) {
+            throw err;
+        }
     }
 
 }

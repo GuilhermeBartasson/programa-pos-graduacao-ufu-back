@@ -66,22 +66,7 @@ export default class selectiveProcessDAL {
 
             if (result.rowCount > 0) {
                 result.rows.forEach(row => {
-                    selectiveProcesses.push({
-                        id: row.id,
-                        name: row.name,
-                        dates: {
-                            startDate: row.startdate,
-                            endDate: row.enddate,
-                            homologationDate: row.homologationdate,
-                            subscriptionEndDate: row.applicationlimitdate,
-                            divulgationDate: row.divulgationdate
-                        },
-                        collegeId: row.collegeid,
-                        active: row.active,
-                        status: row.status,
-                        deleted: row.deleted,
-                        createdBy: row.createdby
-                    });
+                    selectiveProcesses.push(this.assembleSelectiveProcessObject(row));
                 });
             }
         } catch (err) {
@@ -104,28 +89,32 @@ export default class selectiveProcessDAL {
             if (result.rowCount > 0) {
                 let row: any = result.rows[0];
 
-                selectiveProcess = {
-                    id: row.id,
-                    name: row.name,
-                    dates: {
-                        startDate: row.startdate,
-                        endDate: row.enddate,
-                        homologationDate: row.homologationdate,
-                        subscriptionEndDate: row.applicationlimitdate,
-                        divulgationDate: row.divulgationdate
-                    },
-                    collegeId: row.collegeid,
-                    active: row.active,
-                    status: row.status,
-                    deleted: row.deleted,
-                    createdBy: row.createdby
-                }
+                selectiveProcess = this.assembleSelectiveProcessObject(row);
             }
         } catch (err) {
             throw err;
         }
 
         return selectiveProcess
+    }
+
+    private static assembleSelectiveProcessObject(row: any) {
+        return {
+            id: row.id,
+            name: row.name,
+            dates: {
+                startDate: row.startdate,
+                endDate: row.enddate,
+                homologationDate: row.homologationdate,
+                subscriptionEndDate: row.applicationlimitdate,
+                divulgationDate: row.divulgationdate
+            },
+            collegeId: row.collegeid,
+            active: row.active,
+            status: row.status,
+            deleted: row.deleted,
+            createdBy: row.createdby
+        }
     }
 
     public static async deleteSelectiveProcessById(processId: number, client?: PoolClient): Promise<void> {

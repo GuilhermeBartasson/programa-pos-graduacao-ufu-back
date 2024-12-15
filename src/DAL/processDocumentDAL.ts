@@ -2,7 +2,7 @@ import { PoolClient, QueryResult } from "pg";
 import db from '../config/database';
 import ProcessDocument from "../models/processDocument";
 import ProcessDocumentSubmission from "../models/processDocumentSubmission";
-import { EvaluatedDocumentSubmission, EvaluatedFileSubmission } from "../models/evaluatedDocumentSubmission";
+import { EvaluatedDocumentFilePathWrapper, EvaluatedDocumentSubmission, EvaluatedFileSubmission } from "../models/evaluatedDocumentSubmission";
 
 export default class ProcessDocumentDAL {
 
@@ -48,21 +48,28 @@ export default class ProcessDocumentDAL {
         processId: number, subscriptionId: number, evaluatedDocumentSubmission: EvaluatedDocumentSubmission, client?: PoolClient
     ): Promise<QueryResult<any> | undefined> {
         let result: QueryResult<any> | undefined;
+        let index: number = 0;
         const { id } = evaluatedDocumentSubmission.processDocument;
 
         try {
             const query: string =   'INSERT INTO processEvaluatedDocumentAnswers (processId, processDocumentId, subscriptionId, submittedFileNumber, submittedFileAllegedCount, submittedFileAllegedStartDate, submittedFileAllegedEndDate, creationDate) ' +
                                     'VALUES($1, $2, $3, $4, $5, $6, $7, (Now())::timestamp)';
 
-            evaluatedDocumentSubmission.submitedFiles?.forEach(async (evaluatedSubmission: EvaluatedFileSubmission, index: number) => {
-                let fileNumber: number = index + 1;
-                let { accounting, startDate, endDate } = evaluatedSubmission
+            if (evaluatedDocumentSubmission.submitedFiles !== undefined) {
+                for (const evaluatedSubmission of evaluatedDocumentSubmission.submitedFiles) {
+                    let fileNumber: number = index + 1;
+                    let { accounting, startDate, endDate } = evaluatedSubmission
 
-                let values: any[] = [processId, id, subscriptionId, fileNumber, accounting, startDate, endDate];
+                    let values: any[] = [processId, id, subscriptionId, fileNumber, accounting, startDate, endDate];
 
-                if (client === undefined) result = await db.query(query, values);
-                else result = await client.query(query, values);
-            });
+                    if (client === undefined) result = await db.query(query, values);
+                    else result = await client.query(query, values);
+
+                    index += 1;
+                }
+            } else {
+                throw 'Não foram fornecidos documentos para a criação de submissão de processo seletivo';
+            }
         } catch (err) {
             throw err;
         }
@@ -118,9 +125,9 @@ export default class ProcessDocumentDAL {
             else result = await client.query(query, values);
             
             if (result.rowCount > 0) {
-                result.rows.forEach((row: any) => {
+                for (const row of result.rows) {
                     response.push(this.assembleProcessDocumentObject(row));
-                });
+                }
             }
         } catch (err) {
             throw err;
@@ -148,6 +155,48 @@ export default class ProcessDocumentDAL {
         }
 
         return response;
+    }
+
+    public static async updateProcessDocumentSubmissionFilePath(
+        processId: number, subscriptionId: number, documentSubmission: ProcessDocumentSubmission, filePath: string, client?: PoolClient
+    ): Promise<QueryResult<any> | undefined> {
+        let result: QueryResult<any> | undefined;
+
+        try {
+            const query: string = 'UPDATE processDocumentAnswers SET submittedFilePath = $1 WHERE processId = $2 AND subscriptionId = $3 AND processDocumentId = $4';
+            const values: any[] = [filePath, processId, subscriptionId, documentSubmission.processDocument.id];
+
+            if (client === undefined) result = await db.query(query, values);
+            else result = await client.query(query, values);
+        } catch (err) {
+            throw err;
+        }
+
+        return result;
+    }
+
+    public static async updateProcessDocumentEvaluatedSubmissionFilePath(
+        processId: number, subscriptionId: number, documentId: number, filePathWrappers: EvaluatedDocumentFilePathWrapper[], client?: PoolClient
+    ): Promise<QueryResult<any>[]> {
+        const results: QueryResult<any>[] = [];
+
+        try {
+            const query: string = 'UPDATE processEvaluatedDocumentAnswers SET submittedFilePath = $1 WHERE processId = $2 AND subscriptionId = $3 AND processDocumentId = $4 AND submittedFileNumber = $5'
+        
+            for (let filePathWrapper of filePathWrappers) {
+                let values: any[] = [filePathWrapper.filePath, processId, subscriptionId, documentId, filePathWrapper.index];
+                let result: QueryResult<any> | undefined;
+
+                if (client === undefined) result = await db.query(query, values);
+                else result = await client.query(query, values);
+
+                if (result !== undefined) results.push(result);
+            }
+        } catch (err) {
+            throw err;
+        }
+
+        return results;
     }
 
     private static assembleProcessDocumentObject(row: any) {

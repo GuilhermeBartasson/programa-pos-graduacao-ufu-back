@@ -11,6 +11,8 @@ import PaginationService from '../services/paginationService';
 import ProcessDocumentDAL from '../DAL/processDocumentDAL';
 import SelectiveProcessSubscription from '../models/selectiveProcessSubscription';
 import SubscriptionFormFieldAnswer from '../models/subscriptionFormFieldAnswer';
+import ProcessDocumentFAL from '../FAL/processDocumentFAL';
+import { EvaluatedDocumentFilePathWrapper } from '../models/evaluatedDocumentSubmission';
 
 const createSelectiveProcess = async (req: Request, res: Response, next: NextFunction) => {
     const { selectiveProcess } = req.body;
@@ -241,6 +243,13 @@ const saveSubscriptionInformation = async(req: Request, res: Response, next: Nex
             }
         }
 
+        // Saving personal documents
+        if (sub.personalDocuments !== undefined) {
+            for (let document of sub.personalDocuments) {
+                await ProcessDocumentDAL.createProcessDocumentSubsmission(sub.selectiveProcessId, sub.id, document, client);
+            }
+        }
+
         // Saving academic data
         if (sub.academicDataForm !== undefined) {
             for (let answer of sub.academicDataForm) {
@@ -248,6 +257,53 @@ const saveSubscriptionInformation = async(req: Request, res: Response, next: Nex
             }
         }
 
+        // Saving academic documents
+        if (sub.academicDocuments !== undefined) {
+            for (let document of sub.academicDocuments) {
+                await ProcessDocumentDAL.createProcessDocumentSubsmission(sub.selectiveProcessId, sub.id, document, client);
+            }
+        }
+
+        // Saving evaluated documents
+        if (sub.evaluatedDocuments !== undefined) {
+            for (let evaluatedDocuments of sub.evaluatedDocuments) {
+                await ProcessDocumentDAL.createProcessDocumentEvaluatedSubmission(sub.selectiveProcessId, sub.id, evaluatedDocuments, client);
+            }
+        }
+
+        const selectiveProcess: SelectiveProcess | undefined = await SelectiveProcessDAL.getSelectiveProcessById(sub.selectiveProcessId);
+        const applicantFullName: string = `${sub.applicantName}${sub.applicantMiddleName !== undefined ? ` ${sub.applicantMiddleName}` : ''}${sub.applicantLastName !== undefined ? ` ${sub.applicantLastName}` : ''}`
+
+        if (selectiveProcess !== undefined) {
+            ProcessDocumentFAL.deleteApplicantDocuments(sub.selectiveProcessId, selectiveProcess.name, applicantFullName);
+
+            if (sub.personalDocuments !== undefined) {
+                for (let personalDocument of sub.personalDocuments) {
+                    let filePath: string = await ProcessDocumentFAL.writeProcessDocumentSubmission(sub.selectiveProcessId, selectiveProcess.name, applicantFullName, personalDocument);
+                    await ProcessDocumentDAL.updateProcessDocumentSubmissionFilePath(sub.selectiveProcessId, sub.id, personalDocument, filePath, client);
+                }
+            }
+
+            if (sub.academicDocuments !== undefined) {
+                for (let academicDocument of sub.academicDocuments) {
+                    let filePath = await ProcessDocumentFAL.writeProcessDocumentSubmission(sub.selectiveProcessId, selectiveProcess.name, applicantFullName, academicDocument);
+                    await ProcessDocumentDAL.updateProcessDocumentSubmissionFilePath(sub.selectiveProcessId, sub.id, academicDocument, filePath, client);
+                }
+            }
+
+            ProcessDocumentFAL.deleteApplicantEvaluatedDocuments(sub.selectiveProcessId, selectiveProcess.name, applicantFullName);
+
+            if (sub.evaluatedDocuments !== undefined) {
+                for (let evaluatedSubmissions of sub.evaluatedDocuments) {
+                    let filePathWrappers: EvaluatedDocumentFilePathWrapper[] = await ProcessDocumentFAL.writeProcessDocumentEvaluatedSubmission(sub.selectiveProcessId, selectiveProcess.name, applicantFullName, evaluatedSubmissions)
+                    await ProcessDocumentDAL.updateProcessDocumentEvaluatedSubmissionFilePath(sub.selectiveProcessId, sub.id, evaluatedSubmissions.processDocument.id, filePathWrappers, client);
+                }
+            }
+        } else {
+            throw 'Não foi possível encontrar o processo seletivo';
+        }
+
+        await client.query('COMMIT');
     } catch (err) {
         console.error(err);
         await client.query('ROLLBACK');
