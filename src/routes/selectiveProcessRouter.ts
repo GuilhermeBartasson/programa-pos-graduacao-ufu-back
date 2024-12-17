@@ -9,5 +9,6 @@ router.get('/getSelectiveProcessesCover', authMiddleare, controller.getSelective
 router.get('/getSelectiveProcess', authMiddleare, controller.getSelectiveProcessFullInformation);
 router.delete('/deleteSelectiveProcess', authMiddleare, controller.deleteSelectiveProcess);
 router.put('/updateSeletiveProcess', authMiddleare, controller.updateSelectiveProcess);
+router.post('/saveSubscriptionInformation', authMiddleare, controller.saveSubscriptionInformation);
 
 export default router;
