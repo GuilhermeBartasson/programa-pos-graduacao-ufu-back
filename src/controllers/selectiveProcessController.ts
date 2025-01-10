@@ -10,7 +10,6 @@ import PaginationObject from '../models/paginationObject';
 import PaginationService from '../services/paginationService';
 import ProcessDocumentDAL from '../DAL/processDocumentDAL';
 import SelectiveProcessSubscription from '../models/selectiveProcessSubscription';
-import SubscriptionFormFieldAnswer from '../models/subscriptionFormFieldAnswer';
 import ProcessDocumentFAL from '../FAL/processDocumentFAL';
 import { EvaluatedDocumentFilePathWrapper } from '../models/evaluatedDocumentSubmission';
 
@@ -305,8 +304,8 @@ const saveSubscriptionInformation = async(req: Request, res: Response, next: Nex
 
         await client.query('COMMIT');
     } catch (err) {
-        console.error(err);
         await client.query('ROLLBACK');
+        console.error(err);
         return res.status(500).send('Houve um erro ao salvar a inscrição');
     } finally {
         client.release();

@@ -112,7 +112,7 @@ export default class SubscriptionFormFieldDAL {
         const { id, selectiveProcessId } = formFieldAnswer.formField!
 
         try {
-            const query: string =   'INSERT INTO subscriptionFormFieldAnswers (processId, subscriptionFormFieldId, subscriptionId, answer, creationDate) ' +
+            const query: string =   'INSERT INTO subscriptionFormFieldsAnswers (processId, subscriptionFormFieldId, subscriptionId, answer, creationDate) ' +
                                     'VALUES ($1, $2, $3, $4, (Now())::timestamp)';
             const values: any[] = [selectiveProcessId, id, subscriptionId, formFieldAnswer.answer];
 
@@ -374,7 +374,7 @@ export default class SubscriptionFormFieldDAL {
 
     public static async deleteSubscriptionFormFieldAnswersBySubscriptionId(subscriptionId: number, client?: PoolClient): Promise<void> {
         try {
-            const query: string = 'DELETE FROM subscriptionFormFieldAnswers WHERE subscriptionId = $1';
+            const query: string = 'DELETE FROM subscriptionFormFieldsAnswers WHERE subscriptionId = $1';
             const values: any[] = [subscriptionId];
 
             if (client === undefined) db.query(query, values);

@@ -40,7 +40,7 @@ export default class selectiveProcessDAL {
         let result: QueryResult<any> | undefined;
 
         try {
-            const query: string = 'INSERT INTO selectiveProcessSubscriptions (processId, userEmail, modality, vacancyType, targetPublic, researchLineId) VALUES ($1, $2, $3, $4, $5, $6)';
+            const query: string = 'INSERT INTO selectiveProcessSubscriptions (processId, userEmail, modality, vacancyType, targetPublic, researchLineId) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id';
             const values: any[] = [processId, userEmail, modality, vacancyType, targetPublic, researchLineId];
 
             if (client === undefined) result = await db.query(query, values);

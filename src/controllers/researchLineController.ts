@@ -89,7 +89,7 @@ const getRearchLineById = async (req: Request, res: Response, next: NextFunction
 }
 
 const getResearchLinesByIdList = async (req: Request, res: Response, next: NextFunction) => {
-    const { ids } = req.query
+    const { ids } = req.query;
 
     let response: ResearchLine[] = [];
 
