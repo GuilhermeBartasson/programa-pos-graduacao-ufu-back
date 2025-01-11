@@ -67,8 +67,6 @@ export default class ProcessDocumentDAL {
 
                     index += 1;
                 }
-            } else {
-                throw 'Não foram fornecidos documentos para a criação de submissão de processo seletivo';
             }
         } catch (err) {
             throw err;

@@ -118,7 +118,7 @@ export default class ProcessDocumentFAL {
             const college: College | undefined = await CollegeDAL.getCollegeByProcessId(processId);
             const documentsPath: string = `${config.files.basePath}${college?.name}/${processName}/Inscricoes/${applicantFullName}/Documentos/`;
         
-            const files: string[] = fs.readdirSync(documentsPath);
+            const files: string[] = fs.existsSync(documentsPath) ? fs.readdirSync(documentsPath) : [];
 
             for (const file of files) {
                 fs.unlinkSync(path.join(documentsPath, file));
