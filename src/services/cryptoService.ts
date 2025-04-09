@@ -1,6 +1,7 @@
 import * as crypto from 'crypto';
 import jsonwebtoken from 'jsonwebtoken';
 import config from '../config/default.json';
+import NodeRSA from 'node-rsa';
 
 interface HashWithSaltResponse {
     hash: string,
@@ -10,15 +11,13 @@ interface HashWithSaltResponse {
 class CryptoService {
 
     public static privateDecrypt(text: string): string {
-        const privateKey: crypto.KeyObject = crypto.createPrivateKey({ key: process.env.PRIVATE_KEY as string });
+        const keyRSA: NodeRSA = new NodeRSA(
+            process.env.PRIVATE_KEY!.replace(/\\n/g, '\n'), 'private', { encryptionScheme: 'pkcs1' }
+        )
 
-        const decryptedPassword: string = 
-            crypto.privateDecrypt({ 
-                key: privateKey, passphrase: '', 
-                padding: crypto.constants.RSA_PKCS1_PADDING
-            }, Buffer.from(text, 'base64')).toString();
+        keyRSA.setOptions({ environment: 'browser' });
 
-        return decryptedPassword;
+        return keyRSA.decrypt(text).toString();
     }
 
     public static hashAndReturnSalt(text: string): HashWithSaltResponse {

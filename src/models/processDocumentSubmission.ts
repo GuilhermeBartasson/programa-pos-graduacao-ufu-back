@@ -1,6 +1,7 @@
 import ProcessDocument from "./processDocument";
 
 export default interface ProcessDocumentSubmission {
-  submitedDocument?: File;
+  submittedDocument?: string;
+  submittedDocumentExtension?: string;
   processDocument: ProcessDocument;
 }

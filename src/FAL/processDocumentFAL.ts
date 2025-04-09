@@ -14,11 +14,11 @@ export default class ProcessDocumentFAL {
         let path: string | undefined;
 
         try {
-            if (documentSubmission.submitedDocument === undefined) throw 'Nenhum documento foi fornecido';
+            if (documentSubmission.submittedDocument === undefined) throw 'Nenhum documento foi fornecido';
 
             const college: College | undefined = await CollegeDAL.getCollegeByProcessId(processId);
             const documentName: string = documentSubmission.processDocument.name;
-            const extension: string | undefined = documentSubmission.submitedDocument?.name.split('.').pop();
+            const extension: string | undefined = documentSubmission.submittedDocumentExtension;
             const filePath: string = `${config.files.basePath}${college?.name}/${processName}/Inscricoes/${applicantFullName}/Documentos/`;
 
             if (extension === undefined) throw 'Não foi possível identificar a extensão do arquivo';
@@ -26,9 +26,8 @@ export default class ProcessDocumentFAL {
             if (!fs.existsSync(filePath)) fs.mkdirSync(filePath, { recursive: true });
 
             path = `${filePath}${documentName}.${extension}`;
-            const arrayBuffer: ArrayBuffer = await documentSubmission.submitedDocument.arrayBuffer();
 
-            let buffer = Buffer.from(arrayBuffer);
+            let buffer = Buffer.from(documentSubmission.submittedDocument, 'base64');
 
             fs.writeFileSync(path, buffer);
         } catch (err) {
@@ -62,14 +61,13 @@ export default class ProcessDocumentFAL {
 
             index = 0;
             for (const submittedFile of evaluatedDocumentSubmission.submitedFiles) {
-                const extension: string | undefined = submittedFile.file.name.split('.').pop();
+                const extension: string | undefined = submittedFile.extension;
 
                 if (extension === undefined) throw `${documentName} - não foi possível indentificar a extensão do arquivo de número ${index + 1}`;
 
                 const path: string = `${filePath}${documentName}_${index + 1}.${extension}`;
-                const arrayBuffer: ArrayBuffer = await submittedFile.file.arrayBuffer();
 
-                let buffer = Buffer.from(arrayBuffer);
+                let buffer = Buffer.from(submittedFile.file, 'base64');
 
                 fs.writeFileSync(path, buffer);
 

@@ -1,7 +1,8 @@
 import ProcessDocument from "./processDocument";
 
 interface EvaluatedFileSubmission {
-  file: File;
+  file: string;
+  extension?: string;
   accounting?: number;
   startDate?: string;
   endDate?: string;
