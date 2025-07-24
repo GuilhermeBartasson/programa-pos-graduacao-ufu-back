@@ -11,7 +11,6 @@ import PaginationService from '../services/paginationService';
 import ProcessDocumentDAL from '../DAL/processDocumentDAL';
 import SelectiveProcessSubscription from '../models/selectiveProcessSubscription';
 import ProcessDocumentFAL from '../FAL/processDocumentFAL';
-import { EvaluatedDocumentFilePathWrapper } from '../models/evaluatedDocumentSubmission';
 
 const createSelectiveProcess = async (req: Request, res: Response, next: NextFunction) => {
     const { selectiveProcess } = req.body;
@@ -44,6 +43,7 @@ const createSelectiveProcess = async (req: Request, res: Response, next: NextFun
         // Saving documents related to personal information
         if (sp.personalDocuments !== undefined) {
             for (let document of sp.personalDocuments) {
+                console.log(document);
                 await ProcessDocumentDAL.createProcessDocument(processId, document, client);
             }
         }
@@ -215,7 +215,9 @@ const saveSubscriptionInformation = async(req: Request, res: Response, next: Nex
     try {
         await client.query('BEGIN');
 
-        if (sub.id === undefined) {
+        let subscription: SelectiveProcessSubscription | undefined = await SelectiveProcessDAL.getSelectiveProcessSubscriptionByUserEmailAndProcessId(sub.apllicantEmail, sub.selectiveProcessId, client);
+        console.log(sub);
+        if (subscription === undefined) {
             createProcessResult = await SelectiveProcessDAL.createSelectiveProcessSubscription(
                 sub.selectiveProcessId, 
                 sub.apllicantEmail, 
@@ -228,6 +230,7 @@ const saveSubscriptionInformation = async(req: Request, res: Response, next: Nex
 
             sub.id = createProcessResult?.rows[0].id;
         } else {
+            sub.id = subscription.id!;
             await SelectiveProcessDAL.updateSelectiveProcessSubscription(sub.id, sub.modality, sub.vacancyType, sub.targetPublic, sub.researchLineId, client);
         }
 
@@ -270,38 +273,6 @@ const saveSubscriptionInformation = async(req: Request, res: Response, next: Nex
             }
         }
 
-        const selectiveProcess: SelectiveProcess | undefined = await SelectiveProcessDAL.getSelectiveProcessById(sub.selectiveProcessId);
-        const applicantFullName: string = `${sub.applicantName}${sub.applicantMiddleName !== undefined ? ` ${sub.applicantMiddleName}` : ''}${sub.applicantLastName !== undefined ? ` ${sub.applicantLastName}` : ''}`
-
-        if (selectiveProcess !== undefined) {
-            ProcessDocumentFAL.deleteApplicantDocuments(sub.selectiveProcessId, selectiveProcess.name, applicantFullName);
-
-            if (sub.personalDocuments !== undefined) {
-                for (let personalDocument of sub.personalDocuments) {
-                    let filePath: string = await ProcessDocumentFAL.writeProcessDocumentSubmission(sub.selectiveProcessId, selectiveProcess.name, applicantFullName, personalDocument);
-                    await ProcessDocumentDAL.updateProcessDocumentSubmissionFilePath(sub.selectiveProcessId, sub.id, personalDocument, filePath, client);
-                }
-            }
-
-            if (sub.academicDocuments !== undefined) {
-                for (let academicDocument of sub.academicDocuments) {
-                    let filePath = await ProcessDocumentFAL.writeProcessDocumentSubmission(sub.selectiveProcessId, selectiveProcess.name, applicantFullName, academicDocument);
-                    await ProcessDocumentDAL.updateProcessDocumentSubmissionFilePath(sub.selectiveProcessId, sub.id, academicDocument, filePath, client);
-                }
-            }
-
-            ProcessDocumentFAL.deleteApplicantEvaluatedDocuments(sub.selectiveProcessId, selectiveProcess.name, applicantFullName);
-
-            if (sub.evaluatedDocuments !== undefined) {
-                for (let evaluatedSubmissions of sub.evaluatedDocuments) {
-                    let filePathWrappers: EvaluatedDocumentFilePathWrapper[] = await ProcessDocumentFAL.writeProcessDocumentEvaluatedSubmission(sub.selectiveProcessId, selectiveProcess.name, applicantFullName, evaluatedSubmissions)
-                    await ProcessDocumentDAL.updateProcessDocumentEvaluatedSubmissionFilePath(sub.selectiveProcessId, sub.id, evaluatedSubmissions.processDocument.id, filePathWrappers, client);
-                }
-            }
-        } else {
-            throw 'Não foi possível encontrar o processo seletivo';
-        }
-
         await client.query('COMMIT');
     } catch (err) {
         await client.query('ROLLBACK');
@@ -314,11 +285,46 @@ const saveSubscriptionInformation = async(req: Request, res: Response, next: Nex
     res.status(200).send('Inscrição salva com sucesso');
 }
 
+const saveSubscriptionFiles = async(req: Request, res: Response, next: NextFunction) => {
+    let fileData: any = JSON.parse(req.body.file_data[0]);
+    const files: Express.Multer.File[] = req.files as Express.Multer.File[];
+
+    if (files !== undefined) {
+        let selectiveProcess: SelectiveProcess | undefined = await SelectiveProcessDAL.getSelectiveProcessById(fileData.processId);
+        let subscription: SelectiveProcessSubscription | undefined = await SelectiveProcessDAL.getSelectiveProcessSubscriptionByUserEmailAndProcessId(
+                                                                        fileData.applicantEmail, fileData.processId
+                                                                    );
+
+        if (selectiveProcess === undefined) return res.status(400).send('Processo seletivo não encontrado');
+        if (subscription === undefined) return res.status(400).send('Inscrição não encontrada');
+
+        for (let x = 0; x < files.length; x++) {   
+            fileData = JSON.parse(req.body.file_data[x]);
+
+            let processDocument: ProcessDocument | undefined = await ProcessDocumentDAL.getDocumentById(fileData.docId);
+            
+            if (processDocument !== undefined) {
+                ProcessDocumentFAL.writeProcessDocumentSubmission(
+                    fileData.processId, 
+                    subscription.id!,
+                    selectiveProcess.name, 
+                    fileData.applicantFullName, 
+                    files[x], 
+                    fileData.extension,
+                    processDocument,
+                    fileData.fileCount
+                );
+            }
+        }
+    }
+}
+
 export default { 
     createSelectiveProcess, 
     getSelectiveProcessesCover, 
     getSelectiveProcessFullInformation, 
     deleteSelectiveProcess, 
     updateSelectiveProcess, 
-    saveSubscriptionInformation 
+    saveSubscriptionInformation,
+    saveSubscriptionFiles
 };

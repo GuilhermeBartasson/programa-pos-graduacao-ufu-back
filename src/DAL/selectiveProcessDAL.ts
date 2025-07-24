@@ -2,6 +2,7 @@ import { PoolClient, QueryResult } from 'pg';
 import db from '../config/database';
 import SelectiveProcessDates from '../models/selectiveProcessDates';
 import SelectiveProcess from '../models/selectiveProcess';
+import SelectiveProcessSubscription from '../models/selectiveProcessSubscription';
 
 export default class selectiveProcessDAL {
 
@@ -98,7 +99,7 @@ export default class selectiveProcessDAL {
         return selectiveProcess
     }
 
-    private static assembleSelectiveProcessObject(row: any) {
+    private static assembleSelectiveProcessObject(row: any): SelectiveProcess {
         return {
             id: row.id,
             name: row.name,
@@ -114,6 +115,18 @@ export default class selectiveProcessDAL {
             status: row.status,
             deleted: row.deleted,
             createdBy: row.createdby
+        }
+    }
+
+    private static assembleSelectiveProcessSubscriptionObject(row: any): SelectiveProcessSubscription {
+        return {
+            id: row.id,
+            selectiveProcessId: row.processid,
+            apllicantEmail: row.useremail,
+            modality: row.modality,
+            vacancyType: row.vacancyType,
+            targetPublic: row.targetpublic,
+            researchLineId: row.researchlineid
         }
     }
 
@@ -133,6 +146,18 @@ export default class selectiveProcessDAL {
         try {
             const query: string = 'DELETE FROM selectiveProcessSubscriptions WHERE id = $1';
             const values: any[] = [subscriptionId];
+
+            if (client === undefined) await db.query(query, values);
+            else await client.query(query, values);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    public static async deleteSelectiveProcessSubscriptionByUserEmailAndProcessId(userEmail: string, processId: number, client?: PoolClient): Promise<void> {
+        try {
+            const query: string = 'DELETE FROM selectiveProcessSubscriptions WHERE useremail = $1 AND processid = $2';
+            const values: any[] = [userEmail, processId];
 
             if (client === undefined) await db.query(query, values);
             else await client.query(query, values);
@@ -175,6 +200,33 @@ export default class selectiveProcessDAL {
         }
 
         return result;
+    }
+
+    public static async getSelectiveProcessSubscriptionByUserEmailAndProcessId(
+        userEmail: string,
+        processId: number, 
+        client?: PoolClient
+    ): Promise<SelectiveProcessSubscription | undefined> {
+        let result: QueryResult<any> | undefined;
+        let selectiveProcessSubscription: SelectiveProcessSubscription | undefined;
+
+        try {
+            const query: string = "SELECT * FROM selectiveprocesssubscriptions WHERE useremail = $1 AND processid = $2";
+            const values: any[] = [userEmail, processId];
+
+            if (client == undefined) result = await db.query(query, values);
+            else result = await client.query(query, values);
+
+            if (result.rowCount > 0) {
+                let row: any = result.rows[0];
+
+                selectiveProcessSubscription = this.assembleSelectiveProcessSubscriptionObject(row);
+            }
+        } catch (err) {
+            throw err;
+        }
+
+        return selectiveProcessSubscription
     }
 
 }

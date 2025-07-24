@@ -2,34 +2,47 @@ import College from "../models/college";
 import * as fs from 'fs';
 import * as path from 'path';
 import config from '../config/default.json';
-import ProcessDocumentSubmission from "../models/processDocumentSubmission";
 import CollegeDAL from "../DAL/collegeDAL";
-import { EvaluatedDocumentFilePathWrapper, EvaluatedDocumentSubmission, EvaluatedFileSubmission } from "../models/evaluatedDocumentSubmission";
+import { EvaluatedDocumentFilePathWrapper, EvaluatedDocumentSubmission } from "../models/evaluatedDocumentSubmission";
+import ProcessDocument from "../models/processDocument";
+import Stages from "../enums/stages";
+import ProcessDocumentDAL from "../DAL/processDocumentDAL";
 
 export default class ProcessDocumentFAL {
 
     public static async writeProcessDocumentSubmission(
-        processId: number, processName: string, applicantFullName: string, documentSubmission: ProcessDocumentSubmission
+        processId: number, 
+        subscriptionId: number,
+        processName: string, 
+        applicantFullName: string, 
+        file: Express.Multer.File, 
+        extension: string,
+        processDocument: ProcessDocument,
+        fileCount?: number
     ): Promise<string> {
         let path: string | undefined;
 
         try {
-            if (documentSubmission.submittedDocument === undefined) throw 'Nenhum documento foi fornecido';
+            if (file === undefined) throw 'Nenhum documento foi fornecido';
 
             const college: College | undefined = await CollegeDAL.getCollegeByProcessId(processId);
-            const documentName: string = documentSubmission.processDocument.name;
-            const extension: string | undefined = documentSubmission.submittedDocumentExtension;
-            const filePath: string = `${config.files.basePath}${college?.name}/${processName}/Inscricoes/${applicantFullName}/Documentos/`;
+
+            const filePath: string = `${config.files.basePath}${college?.name}/${processName}/${applicantFullName}/${Stages[processDocument.stage]}/`;
 
             if (extension === undefined) throw 'Não foi possível identificar a extensão do arquivo';
 
             if (!fs.existsSync(filePath)) fs.mkdirSync(filePath, { recursive: true });
 
-            path = `${filePath}${documentName}.${extension}`;
+            path = `${filePath}${processDocument.name}${fileCount !== undefined ? `_${fileCount}` : ''}.${extension}`;
 
-            let buffer = Buffer.from(documentSubmission.submittedDocument, 'base64');
+            let buffer = new Uint8Array(file.buffer);
 
             fs.writeFileSync(path, buffer);
+
+            if ([Stages.PersonalData, Stages.AcademicData].includes(processDocument.stage))
+                await ProcessDocumentDAL.updateProcessDocumentSubmissionFilePath(processId, subscriptionId, processDocument.id, path);
+            else
+                await ProcessDocumentDAL.updateProcessDocumentEvaluatedSubmissionFilePath(processId, subscriptionId, processDocument.id, path, fileCount!);
         } catch (err) {
             throw err;
         }

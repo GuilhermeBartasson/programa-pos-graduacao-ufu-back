@@ -8,11 +8,11 @@ import SubscriptionFormFieldAnswer from "./subscriptionFormFieldAnswer";
 export default interface SelectiveProcessSubscription {
   id?: number;
   selectiveProcessId: number;
-  applicantId: number;
+  applicantId?: number;
   apllicantEmail: string;
-  applicantName: string;
-  applicantMiddleName: string;
-  applicantLastName: string;
+  applicantName?: string;
+  applicantMiddleName?: string;
+  applicantLastName?: string;
   vacancyType: VacancyType;
   modality: Modality;
   targetPublic: TargetPublic;

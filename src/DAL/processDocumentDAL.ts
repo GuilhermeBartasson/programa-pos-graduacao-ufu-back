@@ -12,6 +12,8 @@ export default class ProcessDocumentDAL {
         let result: QueryResult<any> | undefined;
         let { name, description, stage, modality, vacancyType, accountingType, accountingValue, evaluated, allowMultipleSubmissions, maxEvaluation, maxEvaluationEnabled, required } = document;
 
+        if (maxEvaluationEnabled === undefined) maxEvaluationEnabled = false;
+
         try {
             const query: string = 'INSERT INTO processDocument (processId, name, description, stage, modality, vacancyType, accountingType, accountingValue, evaluated, allowMultipleSubmissions, "maxEvaluation", "maxEvaluationEnabled", required) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)';
             const values: any[] = [processId, name, description, stage, modality, vacancyType, accountingType, accountingValue, evaluated, allowMultipleSubmissions, maxEvaluation, maxEvaluationEnabled, required];
@@ -156,13 +158,13 @@ export default class ProcessDocumentDAL {
     }
 
     public static async updateProcessDocumentSubmissionFilePath(
-        processId: number, subscriptionId: number, documentSubmission: ProcessDocumentSubmission, filePath: string, client?: PoolClient
+        processId: number, subscriptionId: number, processDocumentId: number, filePath: string, client?: PoolClient
     ): Promise<QueryResult<any> | undefined> {
         let result: QueryResult<any> | undefined;
 
         try {
             const query: string = 'UPDATE processDocumentAnswers SET submittedFilePath = $1 WHERE processId = $2 AND subscriptionId = $3 AND processDocumentId = $4';
-            const values: any[] = [filePath, processId, subscriptionId, documentSubmission.processDocument.id];
+            const values: any[] = [filePath, processId, subscriptionId, processDocumentId];
 
             if (client === undefined) result = await db.query(query, values);
             else result = await client.query(query, values);
@@ -174,27 +176,22 @@ export default class ProcessDocumentDAL {
     }
 
     public static async updateProcessDocumentEvaluatedSubmissionFilePath(
-        processId: number, subscriptionId: number, documentId: number, filePathWrappers: EvaluatedDocumentFilePathWrapper[], client?: PoolClient
-    ): Promise<QueryResult<any>[]> {
-        const results: QueryResult<any>[] = [];
+        processId: number, subscriptionId: number, documentId: number, filePath: string, index: number, client?: PoolClient
+    ): Promise<QueryResult<any> | undefined> {
+        let result: QueryResult<any> | undefined;
 
         try {
             const query: string = 'UPDATE processEvaluatedDocumentAnswers SET submittedFilePath = $1 WHERE processId = $2 AND subscriptionId = $3 AND processDocumentId = $4 AND submittedFileNumber = $5'
         
-            for (let filePathWrapper of filePathWrappers) {
-                let values: any[] = [filePathWrapper.filePath, processId, subscriptionId, documentId, filePathWrapper.index];
-                let result: QueryResult<any> | undefined;
+            let values: any[] = [filePath, processId, subscriptionId, documentId, index];
 
-                if (client === undefined) result = await db.query(query, values);
-                else result = await client.query(query, values);
-
-                if (result !== undefined) results.push(result);
-            }
+            if (client === undefined) result = await db.query(query, values);
+            else result = await client.query(query, values);
         } catch (err) {
             throw err;
         }
 
-        return results;
+        return result;
     }
 
     private static assembleProcessDocumentObject(row: any) {
